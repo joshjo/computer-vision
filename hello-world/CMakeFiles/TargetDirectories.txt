@@ -1,0 +1,3 @@
+/home/josue/Devel/images/hello-world/CMakeFiles/rebuild_cache.dir
+/home/josue/Devel/images/hello-world/CMakeFiles/DisplayImage.dir
+/home/josue/Devel/images/hello-world/CMakeFiles/edit_cache.dir
