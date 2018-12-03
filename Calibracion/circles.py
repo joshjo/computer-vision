@@ -7,6 +7,7 @@ circles = [
     [1, 2, 3],
     [2, 3, 4],
     [2, 3, 2],
+    [20, 3, 2]
 ]
 
 cycol = cycle('bgrcmyo')
@@ -61,6 +62,7 @@ class ProcessCircles(object):
         if not self.circles:
             c = CircleGroup()
             c.add(c)
+            circles.append(c)
             return
         for cg in self.circles:
             if cg.add(circle):
@@ -68,21 +70,23 @@ class ProcessCircles(object):
 
 
 if __name__ == '__main__':
-    cg = CircleGroup()
+    # cg = CircleGroup()
+    pc = ProcessCircles()
     fig, ax = plt.subplots()
-    ax.set_xlim([-5, 20])
-    ax.set_ylim([-5, 20])
+    ax.set_xlim([-5, 30])
+    ax.set_ylim([-5, 30])
     for circle in circles:
         x, y, r = circle
-        ax.add_artist(
-            plt.Circle((x, y), r, color=next(cycol), alpha=0.5, linewidth=1, fill=False))
-        cg.add(circle)
-    x, y = cg.get_center()
-    r1, r2 = cg.bounding_radius
-    ax.scatter(x, y, color='k')
-    ax.add_artist(
-        plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
-    ax.add_artist(
-        plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
-    plt.show()
-    print(cg.get_center(), cg.bounding_radius)
+        ax.add_artist(plt.Circle(
+            (x, y), r, color=next(cycol), alpha=0.5, linewidth=1, fill=False)
+        )
+        pc.add(circle)
+    # x, y = cg.get_center()
+    # r1, r2 = cg.bounding_radius
+    # ax.scatter(x, y, color='k')
+    # ax.add_artist(
+    #     plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
+    # ax.add_artist(
+    #     plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
+    # plt.show()
+    # print(cg.get_center(), cg.bounding_radius)
