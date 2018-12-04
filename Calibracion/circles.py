@@ -4,20 +4,24 @@ from itertools import cycle
 
 
 circles = [
+    [20, 3, 2],
     [1, 2, 3],
     [2, 3, 4],
     [2, 3, 2],
-    [20, 3, 2]
+    [10, 5, 2],
+    [11, 4, 5],
 ]
 
 cycol = cycle('bgrcmyo')
 
 
 class CircleGroup(object):
-    circles = []
-    bounding_x = [math.inf, 0]
-    bounding_y = [math.inf, 0]
-    bounding_radius = [math.inf, 0]
+
+    def __init__(self):
+        self.circles = []
+        self.bounding_x = [math.inf, 0]
+        self.bounding_y = [math.inf, 0]
+        self.bounding_radius = [math.inf, 0]
 
     def get_center(self):
         x = sum([circle[0] for circle in self.circles]) / len(self.circles)
@@ -56,17 +60,18 @@ class CircleGroup(object):
 
 
 class ProcessCircles(object):
-    circles = []
+    def __init__(self):
+        self.circle_groups = []
 
     def add(self, circle):
-        if not self.circles:
-            c = CircleGroup()
-            c.add(c)
-            circles.append(c)
-            return
-        for cg in self.circles:
-            if cg.add(circle):
-                break
+        for cg in self.circle_groups:
+            has_add = cg.add(circle)
+
+            if has_add:
+                return
+        cg = CircleGroup()
+        cg.add(circle)
+        self.circle_groups.append(cg)
 
 
 if __name__ == '__main__':
@@ -81,12 +86,14 @@ if __name__ == '__main__':
             (x, y), r, color=next(cycol), alpha=0.5, linewidth=1, fill=False)
         )
         pc.add(circle)
-    # x, y = cg.get_center()
-    # r1, r2 = cg.bounding_radius
-    # ax.scatter(x, y, color='k')
-    # ax.add_artist(
-    #     plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
-    # ax.add_artist(
-    #     plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
-    # plt.show()
-    # print(cg.get_center(), cg.bounding_radius)
+
+    for cg in pc.circle_groups:
+        x, y = cg.get_center()
+        r1, r2 = cg.bounding_radius
+        print(x, y, r1, r2)
+        ax.scatter(x, y, color='k')
+        ax.add_artist(
+            plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
+        ax.add_artist(
+            plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
+    plt.show()

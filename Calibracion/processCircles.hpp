@@ -7,6 +7,7 @@
 #include <iostream>
 #include <limits>
 #include <math.h>
+#include <cmath>
 
 using namespace std;
 using namespace cv;
@@ -41,11 +42,21 @@ public:
             x += it[0];
             y += it[1];
         }
-        return point(x, y);
+        return point(x / circles.size(), y / circles.size());
     }
 
-    bool add(Vec3f & circle) {
-        if (circles.size() > 0 && (! isInside(circle))) {
+    Vec4f getPoint() {
+        point center = getCenter();
+        return Vec4f(
+            center.first,
+            center.second,
+            bounding_r.first,
+            bounding_r.second
+        );
+    }
+
+    bool add(Vec3f circle) {
+        if ((circles.size() > 0) && (! isInside(circle))) {
             return false;
         }
 
@@ -93,6 +104,25 @@ public:
 };
 
 class ProcessCircles {
+public:
+    vector<CircleGroup> circleGroups;
+
+    ProcessCircles() {
+
+    }
+
+    void add(Vec3f &circle) {
+        for (auto& it : circleGroups) {
+            bool hasAdded = it.add(circle);
+            if (hasAdded) {
+                return;
+            }
+        }
+
+        CircleGroup cg;
+        cg.add(circle);
+        circleGroups.push_back(cg);
+    }
 
 };
 
