@@ -24,6 +24,7 @@ public:
     Mat thresholdMat(Mat src);
     Mat erodeMat(Mat src);
     Mat findEdgeMat(Mat original, Mat src);
+    vector<Vec3f> getCircles(Mat original, Mat src);
     const double PI =3.141592653589793238463;
     //windows
 
