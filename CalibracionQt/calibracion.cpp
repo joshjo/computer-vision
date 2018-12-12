@@ -38,19 +38,24 @@ Mat Calibracion::thresholdMat(Mat src)
     //namedWindow("bit", WINDOW_AUTOSIZE);
     //imshow("bit", thresh);
     adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
-    namedWindow("adapt", WINDOW_AUTOSIZE);
-    imshow("adapt", thresh);
+
+    //namedWindow("adapt", WINDOW_AUTOSIZE);
+    //imshow("adapt", thresh);
     return thresh;
 }
 
-Mat Calibracion:: dilateMat(Mat src)
+Mat Calibracion:: erodeMat(Mat src)
 {
+    //namedWindow("antes", WINDOW_AUTOSIZE);
+    //imshow("antes", src);
     int erosion_type = MORPH_ELLIPSE;
     int erosion_size = 1;
     Mat kernel =  getStructuringElement( erosion_type,
                                            Size( 2*erosion_size + 1, 2*erosion_size+1 ),
                                            Point( erosion_size, erosion_size ) );
-    dilate(src, src, kernel);
+    erode(src, src, kernel);
+    //namedWindow("erode", WINDOW_AUTOSIZE);
+    //imshow("erode", src);
     return src;
 
 }
@@ -94,10 +99,11 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
             }
 
             //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
-            if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.50){
+            if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.70){
                 drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
 
             }
         }
+
     return copy;
 }

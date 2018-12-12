@@ -29,8 +29,8 @@ private:
     QGraphicsScene *sceneEdge;
 
     Calibracion *objCal;
-    int wResize = 512;
-    int hResize = 288;
+    int wResize = 620;
+    int hResize = 380;
 };
 
 #endif // MAINWINDOW_H

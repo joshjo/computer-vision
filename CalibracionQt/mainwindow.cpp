@@ -35,7 +35,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
 
-    namedWindow( "video", CV_WINDOW_AUTOSIZE );
+    //namedWindow( "video", CV_WINDOW_AUTOSIZE );
    //Mat
     Mat matOriginal, matGray, matThresh, matDilate, matEdge, matSrc;
     CvCapture* cap = cvCaptureFromAVI("/home/liz/Vídeos/videos-calibracion/PadronAnillos_01.avi");
@@ -62,7 +62,7 @@ void MainWindow::on_pushButton_clicked()
         matSrc = cv::cvarrToMat(frame);
         matGray = objCal->grayScale(matOriginal);
         matThresh = objCal->thresholdMat(matGray);
-        matDilate = objCal->dilateMat(matThresh);
+        matDilate = objCal->erodeMat(matThresh); // verificar
         matEdge = objCal->findEdgeMat(matSrc, matDilate);
 
 
@@ -102,11 +102,6 @@ void MainWindow::on_pushButton_clicked()
         sceneEdge->addPixmap(pixmapEdge);
         ui->gvEdge->setScene(sceneEdge);
 
-        if(i == 0)
-        {
-            i = 1;
-            imshow( "video", matThresh ); //frame
-        }
         key = cvWaitKey( 1000 / fps );
 
     }
