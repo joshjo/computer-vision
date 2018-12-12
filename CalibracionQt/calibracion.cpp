@@ -193,15 +193,13 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 
      //Vec4f vCircle;
 //#pragma omp parallel num_threads(4) private (vCircle)
-     for( size_t i = 0; i < filter.size(); i++ )
-     {
-         Vec4f vCircle = filter.at(i);
-         //vCircle = filter.at(i);
-         Point center(cvRound(vCircle[0]), cvRound(vCircle[1]));
-         int r1 = cvRound(vCircle[3]);
-         int r2 = cvRound(vCircle[2]);
-         circle( result, center, r1, Scalar(0,0,255), 1, 8, 0 );
-         circle( result, center, r2, Scalar(0,0,255), 1, 8, 0 );
+
+
+     for(auto& it: pm.circles) {
+        Point center(cvRound(it.x), cvRound(it.y));
+        circle(result, center, it.ri, Scalar(0,0,255), 1, 8, 0 );
+        circle(result, center, it.r, Scalar(0,0,255), 1, 8, 0 );
+        putText(result, to_string(it.id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
      }
 
      return result;

@@ -113,6 +113,7 @@ struct Circle {
     number ry;
 
     Circle(number x, number y, number r, number ri = 0) {
+        this->id = -1;
         this->x = x;
         this->y = y;
         this->r = r;
@@ -169,7 +170,7 @@ public:
 struct PatternMatrix {
     int rows;
     int cols;
-//    vector <Circle> *
+    vector<Circle> circles;
 
     PatternMatrix(int cols, int rows) {
         this->cols = cols;
@@ -178,7 +179,6 @@ struct PatternMatrix {
 
     void run(ProcessCircles & pc) {
         vector<Circle> xircles = pc.get_circles();
-        vector<Circle> circles;
 
         number avg_radius = 0;
 
@@ -239,6 +239,21 @@ struct PatternMatrix {
         }
 
         Rect rect = boundingRect(Mat(bounding_points));
+
+        number x1 = rect.x;
+        number y1 = rect.y;
+
+        number w = rect.width;
+        number h = rect.height;
+
+        number dx = w / cols;
+        number dy = h / rows;
+
+        for(auto& it: circles) {
+            int i = (int) ((it.rx - x1) / dx);
+            int j = (int) ((it.ry - y1) / dy);
+            it.id = i + (j * cols);
+        }
 
     }
 };
