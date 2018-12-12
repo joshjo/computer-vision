@@ -13,7 +13,7 @@ void Calibracion::initProcess()
 {
     //Mat image = imread("/home/liz/MEGAsync/Semestre-II/Imagenes-Loayza/Calibracion/sources/prueba2.png", 1 );
 
-    namedWindow("grayScale", WINDOW_AUTOSIZE);
+    //namedWindow("grayScale", WINDOW_AUTOSIZE);
     //grayScale(image);
 }
 
@@ -21,33 +21,28 @@ Mat Calibracion::grayScale(Mat src)
 {
     Mat greyColor;
     cvtColor(src, greyColor, CV_BGR2GRAY);
+    //namedWindow("grayScale", WINDOW_AUTOSIZE);
+    //imshow("grayScale", greyColor);
     return greyColor;
 }
 
 Mat Calibracion::thresholdMat(Mat src)
 {
     Mat thresh;
-    //Gaussian blur
-    //namedWindow("antes", WINDOW_AUTOSIZE);
-    //imshow("antes", src);
 
     GaussianBlur(src, thresh,Size(9,9), 0, 0); //suavizar sectores que producen efecto sal pimeinta despues de umbral.
 
-    // namedWindow("gauss", WINDOW_AUTOSIZE);
-    // imshow("gauss", src);
+   // namedWindow("gauss", WINDOW_AUTOSIZE);
+    //imshow("gauss", thresh);
 
-    //bilateralFilter( src, thresh, 15, 80, 80);
-
-    // GaussianBlur(thresh, thresh,Size(9,9), 2, 2);
-    //namedWindow("bit", WINDOW_AUTOSIZE);
-    //imshow("bit", thresh);
+    //bilateralFilter( src, thresh, 15, 80, 80); costoso
 
     adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
 
     //namedWindow("adapt", WINDOW_AUTOSIZE);
     //imshow("adapt", thresh);
     //return thresh;
-    return src;
+    return thresh;
 }
 
 Mat Calibracion:: erodeMat(Mat src)

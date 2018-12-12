@@ -70,16 +70,10 @@ void MainWindow::on_pushButton_clicked()
         matCircles = cvarrToMat(frame);
 
         matGray = objCal->grayScale(matOriginal);
-
-
         matThresh = objCal->thresholdMat(matGray);
-
         matDilate = objCal->erodeMat(matThresh); // verificar
-
-
         matCopyDilate = matDilate.clone();
-      //  matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
-
+        matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
         //points = objCal->getCircles(matSrc, matDilate);
         matCircles = objCal->calculateCenter(matCircles, matCopyDilate);
 
