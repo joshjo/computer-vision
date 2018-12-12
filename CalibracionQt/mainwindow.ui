@@ -6,20 +6,172 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1233</width>
-    <height>681</height>
+    <width>1924</width>
+    <height>1163</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QGraphicsView" name="gvOriginal">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="gvGrayScale">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>40</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="gvUmbral">
+    <property name="geometry">
+     <rect>
+      <x>1290</x>
+      <y>40</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="gvDilate">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>480</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="gvEdge">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>480</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Original</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>20</y>
+      <width>111</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Escala de Grises</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>1290</x>
+      <y>20</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Threshold</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>460</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Dilatación</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>460</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Bordes</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>1810</x>
+      <y>910</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Inicio</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>1290</x>
+      <y>460</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Resultado</string>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="gvResultado">
+    <property name="geometry">
+     <rect>
+      <x>1290</x>
+      <y>480</y>
+      <width>620</width>
+      <height>380</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1233</width>
+     <width>1924</width>
      <height>22</height>
     </rect>
    </property>

@@ -24,17 +24,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
-INCLUDEPATH += /usr/local/include/opencv4
-LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui
+#INCLUDEPATH += /usr/local/include/opencv4
+#LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_videoio -lopencv_flann
+CONFIG += link_pkgconfig
+PKGCONFIG += opencv
 
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
     calibracion.cpp
 
+#OPEN MP
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp
+
 HEADERS += \
         mainwindow.h \
-    calibracion.h
+    calibracion.h \
+    processCircles.hpp
 
 FORMS += \
         mainwindow.ui
