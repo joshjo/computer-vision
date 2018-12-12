@@ -112,9 +112,9 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
 
 vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 {
-    Mat copy = original.clone();
+   // namedWindow("circles", WINDOW_AUTOSIZE);
     vector<Vec3f> circles;
-
+    Mat copy = original.clone();
     Canny(src, src, 0, 0 * 3, 3);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -127,12 +127,10 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
     //radio
     double minorAxis = 0;
     double majorAxis = 0;
-
+    Vec3f circle;
     for( ; idx >= 0; idx = hierarchy[idx][0] )
     {
         // add filter num contour
-        Vec3f circle;
-
         //circularidad
         area = contourArea(contours[idx]);
         perimeter = arcLength(contours[idx], true);
@@ -155,14 +153,50 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 
         //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
         if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.70){
-            //drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
+           // drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
             Moments m = moments(contours[idx]);
-            circle[0] =  m.m10/m.m00; //X center
-            circle[1] =  m.m01/m.m00; //Y center
-            circle[2] =  rect.width / 2;//radio
-            circles.push_back(circle);
+                       circle[0] =  m.m10/m.m00; //X center
+                       circle[1] =  m.m01/m.m00; //Y center
+                       circle[2] =  rect.width / 2;//radio
+           circles.push_back(circle);
+
         }
+
+       // imshow("cicles", copy);
     }
 
     return circles;
 }
+
+
+ Mat Calibracion::calculateCenter(Mat original, Mat src)
+ {
+     Mat result = original.clone();
+     ProcessCircles pc;
+     vector<Vec3f> points = getCircles(original, src);
+
+     for (auto & it : points) {
+         pc.add(it);
+     }
+
+     vector<Vec4f> filter;
+     for (auto & it : pc.circleGroups) {
+         if (it.circles.size() == 2) {
+             filter.push_back(it.getPoint());
+         }
+     }
+
+
+     for( size_t i = 0; i < filter.size(); i++ )
+     {
+         Vec4f vCircle = filter.at(i);
+
+         Point center(cvRound(vCircle[0]), cvRound(vCircle[1]));
+         int r1 = cvRound(vCircle[3]);
+         int r2 = cvRound(vCircle[2]);
+         circle( result, center, r1, Scalar(0,0,255), 1, 8, 0 );
+         circle( result, center, r2, Scalar(0,0,255), 1, 8, 0 );
+     }
+
+     return result;
+ }

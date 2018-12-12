@@ -36,7 +36,8 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    calibracion.h
+    calibracion.h \
+    processCircles.hpp
 
 FORMS += \
         mainwindow.ui

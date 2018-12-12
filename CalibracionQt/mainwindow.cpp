@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     sceneEdge = new QGraphicsScene(this);
     ui->gvEdge->setScene(sceneEdge);
 
+    sceneResultado = new QGraphicsScene(this);
+    ui->gvResultado->setScene(sceneResultado);
 
     objCal = new Calibracion();
 
@@ -37,7 +39,8 @@ void MainWindow::on_pushButton_clicked()
 
     //namedWindow( "video", CV_WINDOW_AUTOSIZE );
    //Mat
-    Mat matOriginal, matGray, matThresh, matDilate, matEdge, matSrc;
+    Mat matOriginal, matGray, matThresh, matDilate, matEdge, matSrc, matCopyDilate, matCircles;
+    vector<Vec3f> points;
     CvCapture* cap = cvCaptureFromAVI("/home/liz/Vídeos/videos-calibracion/PadronAnillos_01.avi");
     IplImage* frame = cvQueryFrame( cap );
     int key = 0;
@@ -58,14 +61,19 @@ void MainWindow::on_pushButton_clicked()
         // exit if unsuccessful
         if( !frame ) break;
 
+        //Proceso
         matOriginal = cv::cvarrToMat(frame);
         matSrc = cv::cvarrToMat(frame);
+        matCircles = cvarrToMat(frame);
         matGray = objCal->grayScale(matOriginal);
         matThresh = objCal->thresholdMat(matGray);
         matDilate = objCal->erodeMat(matThresh); // verificar
-        matEdge = objCal->findEdgeMat(matSrc, matDilate);
+        matCopyDilate = matDilate.clone();
+        matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
+        //points = objCal->getCircles(matSrc, matDilate);
+        matCircles = objCal->calculateCenter(matCircles, matCopyDilate);
 
-
+        //Dibujar
         //Original
         //QImage image((unsigned char*) matOriginal.data, matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
         QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
@@ -102,8 +110,16 @@ void MainWindow::on_pushButton_clicked()
         sceneEdge->addPixmap(pixmapEdge);
         ui->gvEdge->setScene(sceneEdge);
 
-        key = cvWaitKey( 1000 / fps );
 
+        //Centros
+        QImage imageCenter((unsigned char*) matCircles.data,matCircles.cols, matCircles.rows, QImage::Format_RGB888);
+        imageCenter = imageCenter.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+        QPixmap pixmapCenter = QPixmap::fromImage(imageCenter);
+        sceneResultado->addPixmap(pixmapCenter);
+        ui->gvResultado->setScene(sceneResultado);
+
+        key = cvWaitKey( 1000 / fps );
+        //key = cvWaitKey( 26 );
     }
     //cvDestroyWindow( "video" );
     cvReleaseCapture( &cap );

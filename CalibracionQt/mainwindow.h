@@ -27,6 +27,8 @@ private:
     QGraphicsScene *sceneBinary;
     QGraphicsScene *sceneDilate;
     QGraphicsScene *sceneEdge;
+    QGraphicsScene *sceneResultado;
+
 
     Calibracion *objCal;
     int wResize = 620;
