@@ -102,6 +102,33 @@ public:
 
 };
 
+struct Circle {
+    int id;
+    number x;
+    number y;
+    number r;
+    number ri;
+
+    number rx;
+    number ry;
+
+    Circle(number x, number y, number r, number ri = 0) {
+        this->x = x;
+        this->y = y;
+        this->r = r;
+        this->ri = ri;
+
+        this->rx = x;
+        this->ry = y;
+    }
+
+    number radius_diff() {
+        return r - ri;
+    }
+
+};
+
+
 class ProcessCircles {
 public:
     vector<CircleGroup> circleGroups;
@@ -123,6 +150,98 @@ public:
         circleGroups.push_back(cg);
     }
 
+    vector<Circle> get_circles() {
+        vector<Circle> circles;
+        for (auto& it : circleGroups) {
+            if (it.circles.size() == 2) {
+                point center = it.getCenter();
+                point radius = it.bounding_r;
+                Circle c(center.first, center.second, radius.second, radius.first);
+                circles.push_back(c);
+            }
+        }
+        return circles;
+    }
+
 };
+
+
+struct PatternMatrix {
+    int rows;
+    int cols;
+//    vector <Circle> *
+
+    PatternMatrix(int cols, int rows) {
+        this->cols = cols;
+        this->rows = rows;
+    }
+
+    void run(ProcessCircles & pc) {
+        vector<Circle> xircles = pc.get_circles();
+        vector<Circle> circles;
+
+        number avg_radius = 0;
+
+        for (auto& it: xircles) {
+            avg_radius += it.radius_diff();
+        }
+
+        avg_radius = avg_radius / xircles.size();
+
+        for(auto& it: xircles) {
+            if(it.r >= avg_radius) {
+                circles.push_back(it);
+            }
+        }
+
+        if(circles.size() != (cols * rows)) {
+            return;
+        }
+        vector <Point2f> points;
+
+        for(auto& it: circles) {
+            Point2f p(it.x, it.y);
+            points.push_back(p);
+        }
+        RotatedRect rrect = minAreaRect(Mat(points));
+
+        Point2f rxy = rrect.center;
+        Size2f rs = rrect.size;
+        number angle = 90 - rrect.angle;
+
+        if (angle > 0) {
+            angle += 180;
+        }
+        if ((rows < cols) && (rs.width >rs.height)) {
+            angle -= 90;
+        }
+        angle = angle * (3.14159265359 / 180.0);
+
+        number cos_a = cos(angle);
+        number sin_a = sin(angle);
+
+        for(auto& it: circles) {
+            it.rx -= rxy.x;
+            it.ry -= rxy.y;
+
+            number x1 = it.rx;
+            number y1 = it.ry;
+
+            it.rx = x1 * cos_a - y1 * sin_a;
+            it.ry = x1 * sin_a + y1 * cos_a;
+        }
+
+        vector <Point2f> bounding_points;
+
+        for(auto& it: circles) {
+            Point p(it.rx, it.ry);
+            bounding_points.push_back(p);
+        }
+
+        Rect rect = boundingRect(Mat(bounding_points));
+
+    }
+};
+
 
 #endif // CIRCLEPROCESS_H

@@ -188,6 +188,9 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
          }
      }
 
+     PatternMatrix pm(4, 3);
+     pm.run(pc);
+
      //Vec4f vCircle;
 //#pragma omp parallel num_threads(4) private (vCircle)
      for( size_t i = 0; i < filter.size(); i++ )
