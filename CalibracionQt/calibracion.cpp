@@ -30,18 +30,24 @@ Mat Calibracion::thresholdMat(Mat src)
     //Gaussian blur
     //namedWindow("antes", WINDOW_AUTOSIZE);
     //imshow("antes", src);
-    GaussianBlur(src, src,Size(9,9), 0, 0); //suavizar sectores que producen efecto sal pimeinta despues de umbral.
+
+    GaussianBlur(src, thresh,Size(9,9), 0, 0); //suavizar sectores que producen efecto sal pimeinta despues de umbral.
+
     // namedWindow("gauss", WINDOW_AUTOSIZE);
     // imshow("gauss", src);
-    bilateralFilter( src, thresh, 15, 80, 80);
+
+    //bilateralFilter( src, thresh, 15, 80, 80);
+
     // GaussianBlur(thresh, thresh,Size(9,9), 2, 2);
     //namedWindow("bit", WINDOW_AUTOSIZE);
     //imshow("bit", thresh);
+
     adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
 
     //namedWindow("adapt", WINDOW_AUTOSIZE);
     //imshow("adapt", thresh);
-    return thresh;
+    //return thresh;
+    return src;
 }
 
 Mat Calibracion:: erodeMat(Mat src)
@@ -128,7 +134,8 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
     double minorAxis = 0;
     double majorAxis = 0;
     Vec3f circle;
-    for( ; idx >= 0; idx = hierarchy[idx][0] )
+
+    for(; idx >= 0; idx = hierarchy[idx][0] )
     {
         // add filter num contour
         //circularidad
@@ -186,11 +193,12 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
          }
      }
 
-
+     //Vec4f vCircle;
+//#pragma omp parallel num_threads(4) private (vCircle)
      for( size_t i = 0; i < filter.size(); i++ )
      {
          Vec4f vCircle = filter.at(i);
-
+         //vCircle = filter.at(i);
          Point center(cvRound(vCircle[0]), cvRound(vCircle[1]));
          int r1 = cvRound(vCircle[3]);
          int r2 = cvRound(vCircle[2]);

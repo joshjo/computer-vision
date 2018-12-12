@@ -34,6 +34,10 @@ SOURCES += \
         mainwindow.cpp \
     calibracion.cpp
 
+#OPEN MP
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp
+
 HEADERS += \
         mainwindow.h \
     calibracion.h \

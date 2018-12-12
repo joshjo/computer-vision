@@ -53,6 +53,8 @@ void MainWindow::on_pushButton_clicked()
     int i = 0;
     // Get the fps, needed to set the delay
     int fps = ( int )cvGetCaptureProperty( cap, CV_CAP_PROP_FPS );
+    //time
+    unsigned t0, t1;
 
     while( key != 'x' )
     {
@@ -62,16 +64,29 @@ void MainWindow::on_pushButton_clicked()
         if( !frame ) break;
 
         //Proceso
+        t0=clock();
         matOriginal = cv::cvarrToMat(frame);
         matSrc = cv::cvarrToMat(frame);
         matCircles = cvarrToMat(frame);
+
         matGray = objCal->grayScale(matOriginal);
+
+
         matThresh = objCal->thresholdMat(matGray);
+
         matDilate = objCal->erodeMat(matThresh); // verificar
+
+
         matCopyDilate = matDilate.clone();
-        matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
+      //  matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
+
         //points = objCal->getCircles(matSrc, matDilate);
         matCircles = objCal->calculateCenter(matCircles, matCopyDilate);
+
+        t1 = clock();
+
+        double time = (double(t1-t0)/CLOCKS_PER_SEC);
+        cout << "Execution Time: " << time << " seg." << endl;
 
         //Dibujar
         //Original

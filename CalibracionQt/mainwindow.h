@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include<QGraphicsPixmapItem>
 #include "calibracion.h"
+#include <ctime>
 
 namespace Ui {
 class MainWindow;
