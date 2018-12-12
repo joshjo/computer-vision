@@ -27,9 +27,19 @@ Mat Calibracion::grayScale(Mat src)
 Mat Calibracion::thresholdMat(Mat src)
 {
     Mat thresh;
-    //Gaussian blur
-    GaussianBlur(src, thresh,Size(3,3), 2, 2);
-    adaptiveThreshold(thresh, thresh,200,ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV,3,2);
+    //Gaussian blur    
+    //namedWindow("antes", WINDOW_AUTOSIZE);
+    //imshow("antes", src);
+    GaussianBlur(src, src,Size(9,9), 0, 0); //suavizar sectores que producen efecto sal pimeinta despues de umbral.
+   // namedWindow("gauss", WINDOW_AUTOSIZE);
+   // imshow("gauss", src);
+    bilateralFilter( src, thresh, 15, 80, 80);
+    // GaussianBlur(thresh, thresh,Size(9,9), 2, 2);
+    //namedWindow("bit", WINDOW_AUTOSIZE);
+    //imshow("bit", thresh);
+    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
+    namedWindow("adapt", WINDOW_AUTOSIZE);
+    imshow("adapt", thresh);
     return thresh;
 }
 
@@ -47,6 +57,7 @@ Mat Calibracion:: dilateMat(Mat src)
 
 Mat Calibracion::findEdgeMat(Mat original, Mat src)
 {
+    Mat copy = original.clone();
      Canny(src, src, 0, 0 * 3, 3);
      vector<vector<Point> > contours;
        vector<Vec4i> hierarchy;
@@ -84,9 +95,9 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
 
             //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
             if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.50){
-                drawContours( original, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
+                drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
 
             }
         }
-    return original;
+    return copy;
 }

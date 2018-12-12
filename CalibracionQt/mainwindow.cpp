@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     scene = new QGraphicsScene(this);
     ui->gvOriginal->setScene(scene);
 
@@ -14,7 +15,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     sceneBinary = new QGraphicsScene(this);
     ui->gvUmbral->setScene(sceneBinary);
-
 
     sceneDilate = new QGraphicsScene(this);
     ui->gvDilate->setScene(sceneDilate);
@@ -96,11 +96,12 @@ void MainWindow::on_pushButton_clicked()
         ui->gvDilate->setScene(sceneDilate);
 
         //Canny
-      /*  QImage imageEdge((unsigned char*) matEdge.data,matEdge.cols, matEdge.rows, QImage::Format_RGB888);
+        QImage imageEdge((unsigned char*) matEdge.data,matEdge.cols, matEdge.rows, QImage::Format_RGB888);
         imageEdge = imageEdge.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
         QPixmap pixmapEdge = QPixmap::fromImage(imageEdge);
         sceneEdge->addPixmap(pixmapEdge);
-        ui->gvEdge->setScene(sceneEdge);*/
+        ui->gvEdge->setScene(sceneEdge);
+
         if(i == 0)
         {
             i = 1;
