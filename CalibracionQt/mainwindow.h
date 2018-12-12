@@ -17,11 +17,19 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
-    QGraphicsPixmapItem *pixmap;
     QGraphicsScene *scene;
-    VideoCapture video;
+    QGraphicsScene *sceneGray;
+    QGraphicsScene *sceneBinary;
+    QGraphicsScene *sceneDilate;
+    QGraphicsScene *sceneEdge;
+    Calibracion *objCal;
+    int wResize = 512;
+    int hResize = 288;
 };
 
 #endif // MAINWINDOW_H

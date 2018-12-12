@@ -11,6 +11,7 @@
 
 
 using namespace cv;
+using namespace std;
 
 class Calibracion
 {
@@ -19,11 +20,11 @@ public:
     Calibracion();
 
     void initProcess();
-    void grayScale(Mat &src);
-    void threshold(Mat &src);
-    void dilate(Mat &src);
-    void findEdge(Mat &src);
-
+    Mat grayScale(Mat src);
+    Mat thresholdMat(Mat src);
+    Mat dilateMat(Mat src);
+    Mat findEdgeMat(Mat original, Mat src);
+    const double PI =3.141592653589793238463;
     //windows
 
 };
