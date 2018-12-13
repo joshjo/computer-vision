@@ -112,6 +112,10 @@ struct Circle {
     number rx;
     number ry;
 
+    Circle() {
+        x = y = r = ri = rx = ry = 0;
+    }
+
     Circle(number x, number y, number r, number ri = 0) {
         this->id = -1;
         this->x = x;
@@ -151,14 +155,15 @@ public:
         circleGroups.push_back(cg);
     }
 
-    vector<Circle> get_circles() {
-        vector<Circle> circles;
+    vector<Circle*> get_circles() {
+        vector<Circle*> circles;
         for (auto& it : circleGroups) {
             if (it.circles.size() == 2) {
                 point center = it.getCenter();
                 point radius = it.bounding_r;
-                Circle c(center.first, center.second, radius.second, radius.first);
-                circles.push_back(c);
+                circles.push_back(
+                    new Circle(center.first, center.second, radius.second, radius.first)
+                );
             }
         }
         return circles;
@@ -170,26 +175,40 @@ public:
 struct PatternMatrix {
     int rows;
     int cols;
-    vector<Circle> circles;
+    vector<Circle *> circles;
+    bool isValid;
+    vector<Circle *> * matrix;
 
     PatternMatrix(int cols, int rows) {
         this->cols = cols;
         this->rows = rows;
+        isValid = false;
+        matrix = new vector<Circle *>(cols * rows, NULL);
+    }
+
+    int numberValids(){
+        int count = 0;
+        for (int i = 0; i < matrix->size(); i++) {
+            if (matrix->at(i) != NULL) {
+                count++;
+            }
+        }
+        return count;
     }
 
     void run(ProcessCircles & pc) {
-        vector<Circle> xircles = pc.get_circles();
+        vector<Circle *> xircles = pc.get_circles();
 
         number avg_radius = 0;
 
         for (auto& it: xircles) {
-            avg_radius += it.radius_diff();
+            avg_radius += it->radius_diff();
         }
 
         avg_radius = avg_radius / xircles.size();
 
         for(auto& it: xircles) {
-            if(it.r >= avg_radius) {
+            if(it->r >= avg_radius) {
                 circles.push_back(it);
             }
         }
@@ -197,10 +216,12 @@ struct PatternMatrix {
         if(circles.size() != (cols * rows)) {
             return;
         }
+        isValid = true;
+
         vector <Point2f> points;
 
         for(auto& it: circles) {
-            Point2f p(it.x, it.y);
+            Point2f p(it->x, it->y);
             points.push_back(p);
         }
         RotatedRect rrect = minAreaRect(Mat(points));
@@ -221,20 +242,20 @@ struct PatternMatrix {
         number sin_a = sin(angle);
 
         for(auto& it: circles) {
-            it.rx -= rxy.x;
-            it.ry -= rxy.y;
+            it->rx -= rxy.x;
+            it->ry -= rxy.y;
 
-            number x1 = it.rx;
-            number y1 = it.ry;
+            number x1 = it->rx;
+            number y1 = it->ry;
 
-            it.rx = x1 * cos_a - y1 * sin_a;
-            it.ry = x1 * sin_a + y1 * cos_a;
+            it->rx = x1 * cos_a - y1 * sin_a;
+            it->ry = x1 * sin_a + y1 * cos_a;
         }
 
         vector <Point2f> bounding_points;
 
         for(auto& it: circles) {
-            Point p(it.rx, it.ry);
+            Point p(it->rx, it->ry);
             bounding_points.push_back(p);
         }
 
@@ -249,10 +270,13 @@ struct PatternMatrix {
         number dx = w / cols;
         number dy = h / rows;
 
-        for(auto& it: circles) {
-            int i = (int) ((it.rx - x1) / dx);
-            int j = (int) ((it.ry - y1) / dy);
-            it.id = i + (j * cols);
+//        for(auto& it: circles) {
+        for (int e = 0; e < circles.size(); e++) {
+            Circle * c = circles[e];
+            int i = (int) ((c->rx - x1) / dx);
+            int j = (int) ((c->ry - y1) / dy);
+            c->id = i + (j * cols);
+            matrix->at(c->id) = c;
         }
 
     }

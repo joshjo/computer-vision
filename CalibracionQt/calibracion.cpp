@@ -194,13 +194,25 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
      //Vec4f vCircle;
 //#pragma omp parallel num_threads(4) private (vCircle)
 
+     if (pm.isValid) {
+         for(auto& it: pm.circles) {
+            Point center(cvRound(it->x), cvRound(it->y));
+            circle(result, center, it->ri, Scalar(0,0,255), 1, 8, 0 );
+            circle(result, center, it->r, Scalar(0,0,255), 1, 8, 0 );
+            putText(result, to_string(it->id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
+         }
 
-     for(auto& it: pm.circles) {
-        Point center(cvRound(it.x), cvRound(it.y));
-        circle(result, center, it.ri, Scalar(0,0,255), 1, 8, 0 );
-        circle(result, center, it.r, Scalar(0,0,255), 1, 8, 0 );
-        putText(result, to_string(it.id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
+         for (int i = 0; i < (pm.matrix->size() - 1); i++) {
+             cout << "valids"  << pm.numberValids() << endl;
+             if(pm.matrix->at(i) != NULL && pm.matrix->at(i + 1) != NULL) {
+                 Point p1(cvRound(pm.matrix->at(i)->x), cvRound(pm.matrix->at(i)->y));
+                 Point p2(cvRound(pm.matrix->at(i + 1)->x), cvRound(pm.matrix->at(i + 1)->y));
+                 line(result, p1, p2, Scalar(255, 255, 255), 2);
+             }
+         }
      }
+
+
 
      return result;
  }
