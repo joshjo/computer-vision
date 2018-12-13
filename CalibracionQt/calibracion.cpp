@@ -101,12 +101,15 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
         }
 
         //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
-        if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.70){
+        /*if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.70){
             drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
 
         }
+        */
+        drawContours( src, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
     }
-
+    namedWindow("canny", WINDOW_AUTOSIZE);
+    imshow("canny", src);
     return copy;
 }
 
