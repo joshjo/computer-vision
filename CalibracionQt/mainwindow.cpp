@@ -41,7 +41,8 @@ void MainWindow::on_pushButton_clicked()
    //Mat
     Mat matOriginal, matGray, matThresh, matDilate, matEdge, matSrc, matCopyDilate, matCircles;
     vector<Vec3f> points;
-    CvCapture* cap = cvCaptureFromAVI("/home/josue/Devel/videos/padron1.avi");
+   // CvCapture* cap = cvCaptureFromAVI("/home/josue/Devel/videos/padron1.avi");
+    CvCapture* cap = cvCaptureFromAVI("/home/liz/Vídeos/videos-calibracion/PadronAnillos_03.avi");
     IplImage* frame = cvQueryFrame( cap );
     int key = 0;
     // Check
@@ -65,6 +66,11 @@ void MainWindow::on_pushButton_clicked()
 
         //Proceso
         t0=clock();
+/*
+        matOriginal = imread("/home/liz/Imágenes/prueba.png", CV_LOAD_IMAGE_COLOR);
+        matSrc = matOriginal.clone();
+        matCircles = matOriginal.clone();
+*/
         matOriginal = cv::cvarrToMat(frame);
         matSrc = cv::cvarrToMat(frame);
         matCircles = cvarrToMat(frame);
@@ -73,14 +79,14 @@ void MainWindow::on_pushButton_clicked()
         matThresh = objCal->thresholdMat(matGray);
         matDilate = objCal->erodeMat(matThresh); // verificar
         matCopyDilate = matDilate.clone();
-        matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
+        //matEdge = objCal->findEdgeMat(matSrc, matDilate); // omitir este paso
         //points = objCal->getCircles(matSrc, matDilate);
         matCircles = objCal->calculateCenter(matCircles, matCopyDilate);
 
         t1 = clock();
 
         double time = (double(t1-t0)/CLOCKS_PER_SEC);
-        cout << "Execution Time: " << time << " seg." << endl;
+        cout << " Execution Time: " << time << " seg." << endl;
 
 //        //Dibujar
 //        //Original

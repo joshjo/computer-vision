@@ -1,4 +1,4 @@
-#include "calibracion.h"
+﻿#include "calibracion.h"
 
 Calibracion::Calibracion(const char *filename)
 {
@@ -54,9 +54,9 @@ Mat Calibracion:: erodeMat(Mat src)
     Mat kernel =  getStructuringElement( erosion_type,
                                          Size( 2*erosion_size + 1, 2*erosion_size+1 ),
                                          Point( erosion_size, erosion_size ) );
-    erode(src, src, kernel);
-    //namedWindow("erode", WINDOW_AUTOSIZE);
-    //imshow("erode", src);
+   // erode(src, src, kernel);
+    namedWindow("erode", WINDOW_AUTOSIZE);
+    imshow("erode", src);
     return src;
 
 }
@@ -113,10 +113,10 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
 
 vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 {
-   // namedWindow("circles", WINDOW_AUTOSIZE);
+    namedWindow("circles", WINDOW_AUTOSIZE);
     vector<Vec3f> circles;
     Mat copy = original.clone();
-    Canny(src, src, 0, 0 * 3, 3);
+    Canny(src, src, 50, 150, 3);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(src, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
@@ -138,35 +138,28 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
         perimeter = arcLength(contours[idx], true);
         indexCircularity = (4 * PI * area)/pow(perimeter,2);
 
-        //rectangulos width y heigth debe ser casi iguales
-        //Corregir
-        Rect rect = boundingRect(contours[idx]);
-        if(rect.width > rect.height){
-            majorAxis = rect.width;
-            minorAxis = rect.height;
-        }
-        else if (rect. height > rect.width){
-            majorAxis = rect.height;
-            minorAxis = rect.width;
-        } else{
-            majorAxis = rect.height;
-            minorAxis = rect.width;
-        }
 
+        /*RotatedRect rectEllipse = fitEllipse(contours[idx]);
+        minorAxis = rectEllipse.size.height/2;
+        majorAxis = rectEllipse.size.width/2;*/
         //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
-        if(indexCircularity > 0.78 && minorAxis/majorAxis > 0.70){
-           // drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
+
+        Rect rect = boundingRect(contours[idx]);
+
+
+        if(indexCircularity > 0.65 &&  rect.width > 3) // && minorAxis/majorAxis > 0.70){
+        {
+            drawContours( copy, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
             Moments m = moments(contours[idx]);
-                       circle[0] =  m.m10/m.m00; //X center
-                       circle[1] =  m.m01/m.m00; //Y center
-                       circle[2] =  rect.width / 2;//radio
-           circles.push_back(circle);
+            circle[0] =  m.m10/m.m00; //X center
+            circle[1] =  m.m01/m.m00; //Y center
+            circle[2] =  rect.width / 2;//radio
+            circles.push_back(circle);
 
         }
 
-       // imshow("cicles", copy);
     }
-
+    imshow("circles", copy);
     return circles;
 }
 
@@ -188,7 +181,7 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
          }
      }
 
-     PatternMatrix pm(4, 3);
+     PatternMatrix pm(6, 5);
      pm.run(pc);
 
      //Vec4f vCircle;
@@ -203,7 +196,6 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
          }
 
          for (int i = 0; i < (pm.matrix->size() - 1); i++) {
-             cout << "valids"  << pm.numberValids() << endl;
              if(pm.matrix->at(i) != NULL && pm.matrix->at(i + 1) != NULL) {
                  Point p1(cvRound(pm.matrix->at(i)->x), cvRound(pm.matrix->at(i)->y));
                  Point p2(cvRound(pm.matrix->at(i + 1)->x), cvRound(pm.matrix->at(i + 1)->y));
@@ -211,7 +203,7 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
              }
          }
      }
-
+      cout << "valids "  << pm.numberValids() ;
 
 
      return result;
