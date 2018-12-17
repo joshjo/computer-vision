@@ -32,7 +32,8 @@ PKGCONFIG += opencv
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    calibracion.cpp
+    calibracion.cpp \
+    data.cpp
 
 #OPEN MP
 QMAKE_CXXFLAGS += -fopenmp
@@ -41,7 +42,8 @@ LIBS += -fopenmp
 HEADERS += \
         mainwindow.h \
     calibracion.h \
-    processCircles.hpp
+    processCircles.hpp \
+    data.h
 
 FORMS += \
         mainwindow.ui

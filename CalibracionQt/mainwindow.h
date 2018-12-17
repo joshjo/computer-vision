@@ -32,8 +32,8 @@ private:
 
 
     Calibracion *objCal;
-    int wResize = 620;
-    int hResize = 380;
+    int wResize = 420;
+    int hResize = 236;
 };
 
 #endif // MAINWINDOW_H

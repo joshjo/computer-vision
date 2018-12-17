@@ -35,28 +35,24 @@ Mat Calibracion::thresholdMat(Mat src)
    // namedWindow("gauss", WINDOW_AUTOSIZE);
     //imshow("gauss", thresh);
 
-    //bilateralFilter( src, thresh, 15, 80, 80); costoso
-
     adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
 
     //namedWindow("adapt", WINDOW_AUTOSIZE);
     //imshow("adapt", thresh);
-    //return thresh;
     return thresh;
 }
 
 Mat Calibracion:: erodeMat(Mat src)
 {
-    //namedWindow("antes", WINDOW_AUTOSIZE);
-    //imshow("antes", src);
+
     int erosion_type = MORPH_ELLIPSE;
     int erosion_size = 1;
     Mat kernel =  getStructuringElement( erosion_type,
                                          Size( 2*erosion_size + 1, 2*erosion_size+1 ),
                                          Point( erosion_size, erosion_size ) );
    // erode(src, src, kernel);
-    namedWindow("erode", WINDOW_AUTOSIZE);
-    imshow("erode", src);
+   // namedWindow("erode", WINDOW_AUTOSIZE);
+    //imshow("erode", src);
     return src;
 
 }
@@ -85,8 +81,6 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
         perimeter = arcLength(contours[idx], true);
         indexCircularity = (4 * PI * area)/pow(perimeter,2);
 
-        //rectangulos width y heigth debe ser casi iguales
-        //Corregir
         Rect rect = boundingRect(contours[idx]);
         if(rect.width > rect.height){
             majorAxis = rect.width;
@@ -113,7 +107,7 @@ Mat Calibracion::findEdgeMat(Mat original, Mat src)
 
 vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 {
-    namedWindow("circles", WINDOW_AUTOSIZE);
+
     vector<Vec3f> circles;
     Mat copy = original.clone();
     Canny(src, src, 50, 150, 3);
@@ -132,17 +126,10 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
 
     for(; idx >= 0; idx = hierarchy[idx][0] )
     {
-        // add filter num contour
         //circularidad
         area = contourArea(contours[idx]);
         perimeter = arcLength(contours[idx], true);
         indexCircularity = (4 * PI * area)/pow(perimeter,2);
-
-
-        /*RotatedRect rectEllipse = fitEllipse(contours[idx]);
-        minorAxis = rectEllipse.size.height/2;
-        majorAxis = rectEllipse.size.width/2;*/
-        //cout << "circularidad: " <<  indexCircularity << " eje mayor: " << minorAxis/ majorAxis;
 
         Rect rect = boundingRect(contours[idx]);
 
@@ -159,7 +146,8 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
         }
 
     }
-    imshow("circles", copy);
+    //namedWindow("circles", WINDOW_AUTOSIZE);
+  //  imshow("circles", copy);
     return circles;
 }
 
@@ -203,8 +191,55 @@ vector<Vec3f> Calibracion::getCircles(Mat original, Mat src)
              }
          }
      }
-      cout << "valids "  << pm.numberValids() ;
-
 
      return result;
+ }
+
+
+
+ Data Calibracion::calculateCenters(Mat original, Mat src)
+ {
+     Data resultData;
+     Mat result = original.clone();
+     ProcessCircles pc;
+     vector<Vec3f> points = getCircles(original, src);
+
+     for (auto & it : points) {
+         pc.add(it);
+     }
+
+     vector<Vec4f> filter;
+     for (auto & it : pc.circleGroups) {
+         if (it.circles.size() == 2) {
+             filter.push_back(it.getPoint());
+         }
+     }
+
+     PatternMatrix pm(6, 5);
+     pm.run(pc);
+
+     //Vec4f vCircle;
+//#pragma omp parallel num_threads(4) private (vCircle)
+
+     if (pm.isValid) {
+         for(auto& it: pm.circles) {
+            Point center(cvRound(it->x), cvRound(it->y));
+            circle(result, center, it->ri, Scalar(0,0,255), 1, 8, 0 );
+            circle(result, center, it->r, Scalar(0,0,255), 1, 8, 0 );
+            putText(result, to_string(it->id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
+         }
+
+         for (int i = 0; i < (pm.matrix->size() - 1); i++) {
+             if(pm.matrix->at(i) != NULL && pm.matrix->at(i + 1) != NULL) {
+                 Point p1(cvRound(pm.matrix->at(i)->x), cvRound(pm.matrix->at(i)->y));
+                 Point p2(cvRound(pm.matrix->at(i + 1)->x), cvRound(pm.matrix->at(i + 1)->y));
+                 line(result, p1, p2, Scalar(255, 255, 255), 2);
+             }
+         }
+     }
+    resultData.matSrc = result;
+    resultData.numValids = pm.numberValids();
+
+    return resultData;
+
  }
