@@ -3,8 +3,11 @@
 
 #include <QMainWindow>
 #include<QGraphicsPixmapItem>
-#include "calibracion.h"
 #include <ctime>
+#include <QFileDialog>
+#include <QMessageBox>
+#include "calibracion.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -21,6 +24,10 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_btnAbrir_clicked();
+
+    bool verifyParameters();
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
@@ -32,6 +39,9 @@ private:
 
 
     Calibracion *objCal;
+    string nameFile;
+    int cols = 0;
+    int rows = 0;
     int wResize = 420;
     int hResize = 236;
 };

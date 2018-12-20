@@ -12,6 +12,7 @@ public:
     Data();
 public:
     Mat matSrc;
+    Mat matContours;
     int numValids;
 };
 

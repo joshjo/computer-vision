@@ -9,28 +9,18 @@
 //#include <iostream>
 #include <omp.h>
 #include <processCircles.hpp>
-
 #include "data.h"
 
-//using namespace cv;
-//using namespace std;
 
 class Calibracion
 {
 public:
-    Calibracion(const char *filename);
     Calibracion();
 
-    void initProcess();
     Mat grayScale(Mat src);
     Mat thresholdMat(Mat src);
-    Mat erodeMat(Mat src);
-    Mat findEdgeMat(Mat original, Mat src);
-    vector<Vec3f> getCircles( Mat original, Mat src);
-    Mat calculateCenter(Mat original, Mat src);
-    Data calculateCenters(Mat original, Mat src);
+    Data calculateCenters(Mat original, Mat src, int rows, int cols);
     const double PI =3.141592653589793238463;
-    //windows
 
 };
 
