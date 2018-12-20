@@ -29,14 +29,31 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
     ProcessCircles pc;
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-
+    double t0 = clock();
     Canny(srcThresh, srcThresh, 50, 150, 3);
     findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
-
-
-    double indexCircularity = 0; //circularidad
-    Vec3f circleTemp;
     int idx = 0;
+    Vec3f circleTemp;
+    RotatedRect rectRot;
+    /*
+    for(; idx >= 0 ; idx = hierarchy[idx][0] )
+    {
+        if( contours[idx].size() > 5 && (hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ) )
+        {
+            rectRot = fitEllipse( Mat(contours[idx]) );
+            ellipse( resultContours,rectRot, Scalar(255,0,255), 2, 8 );
+            //Moments m = moments(contours[idx]);
+            circleTemp[0] =  rectRot.center.x; //X center
+            circleTemp[1] = rectRot.center.y; //Y center
+            circleTemp[2] =  rectRot.size.width/2;//radio
+            pc.add(circleTemp);
+        }
+    }
+     ;
+     */
+     double indexCircularity = 0; //circularidad
+
+
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
         if((hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ))
@@ -58,6 +75,10 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
         //else  cout << "not " << hierarchy[idx][1] << " " << hierarchy[idx][2] << hierarchy[idx][3] << endl;
 
     }
+    double t1 = clock();
+   double time = (double(t1-t0)/CLOCKS_PER_SEC);
+    cout << " contours " << time ;
+
 
     vector<Vec4f> filter;
     for (auto & it : pc.circleGroups) {

@@ -194,12 +194,12 @@ bool MainWindow::verifyParameters()
     }
     else if(ui->txtFilas->text().length() <= 0)
     {
-        QMessageBox::information(this, tr("Notificación."), "Ingrese número de columnas del patrón.");
+        QMessageBox::information(this, tr("Notificación."), "Ingrese número de filas del patrón.");
         return false;
     }
     else if(ui->txtColumnas->text().length() <= 0)
     {
-        QMessageBox::information(this, tr("Notificación."), "Ingrese número de filas del patrón");
+        QMessageBox::information(this, tr("Notificación."), "Ingrese número de columnas del patrón");
         return false;
     }
     else
