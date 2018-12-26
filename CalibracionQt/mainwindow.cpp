@@ -71,34 +71,15 @@ void MainWindow::on_pushButton_clicked()
         {
             frame = cvQueryFrame( cap );
             if( !frame ) break;
-
-            tinit = clock();
-            t0=clock();
             matOriginal = cv::cvarrToMat(frame);
-            t1 = clock();
-            time = (double(t1-t0)/CLOCKS_PER_SEC);
-            cout << "Original " << time ;
-
             t0=clock();
-            matGray = objCal->grayScale(matOriginal);
-            t1 = clock();
-            time = (double(t1-t0)/CLOCKS_PER_SEC);
-            cout << " gray " << time ;
-
-            t0=clock();
-            matThresh = objCal->thresholdMat(matGray);
-            t1 = clock();
-            time = (double(t1-t0)/CLOCKS_PER_SEC);
-            cout << " thresh " << time ;
-
-            t0 = clock();
+            matGray = objCal->grayScale(matOriginal); //0.001824
+            matThresh = objCal->thresholdMat(matGray); //0.001669
             matResult = matThresh.clone();
-            Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols);
+            Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols); //0.006227
             t1 = clock();
             time = (double(t1-t0)/CLOCKS_PER_SEC);
-            cout << " Get circles " << time ;
-            time = (double(t1-tinit)/CLOCKS_PER_SEC);
-            cout << " total " << time << endl;
+            cout << " Time: " << time << endl;
 
 
             total++;
