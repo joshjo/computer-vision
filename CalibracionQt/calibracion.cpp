@@ -17,20 +17,22 @@ Mat Calibracion::thresholdMat(Mat src)
 {
     Mat thresh;
     GaussianBlur(src, thresh,Size(9,9), 2, 2);
-    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
+    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV,11,6);
     return thresh;
 }
 
 Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int cols)
 {
+
     Data resultData;
     Mat resultCenter = original.clone();
     Mat resultContours = original.clone();
     ProcessCircles pc;
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
+
     Canny(srcThresh, srcThresh, 50, 150, 3); //0.002818
-    findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE); //0.001374
+    findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
 
     int idx = 0;
     Vec3f circleTemp;
@@ -46,39 +48,34 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
         {
 
             rectRot = fitEllipse(contours[idx]);
-            if(rectRot.size.width > rectRot.size.height)
+            if(rectRot.size.width< 50 )
             {
-                a = rectRot.size.width/2 ;
-                b =rectRot.size.height/2;
-            } else
-            {
-                b = rectRot.size.width/2 ;
-                a =rectRot.size.height/2;
-            }
-            if(a/b > 1 && a/b <1.5)
-            {
-                //cout << " ratio: " << a /b;
-                ellipse( resultContours,rectRot, Scalar(255,0,255) );
-                circleTemp[0] =  rectRot.center.x; //X center
-                circleTemp[1] = rectRot.center.y; //Y center
-                circleTemp[2] =  rectRot.size.width/2;//radio
-
-                pc.add(circleTemp);
+                if(rectRot.size.width > rectRot.size.height)
+                {
+                    a = rectRot.size.width/2 ;
+                    b =rectRot.size.height/2;
+                } else
+                {
+                    b = rectRot.size.width/2 ;
+                    a =rectRot.size.height/2;
+                }
+                if( a/b > 1 && a/b <1.5)
+                {
+                    //cout << " ratio: " << a /b;
+                    ellipse( resultContours,rectRot, Scalar(255,0,255) );
+                    circleTemp[0] =  rectRot.center.x; //X center
+                    circleTemp[1] = rectRot.center.y; //Y center
+                    circleTemp[2] =  rectRot.size.width/2;//radio
+                    pc.add(circleTemp);
+                }
             }
         }
     }
 
-    //grid 0.006227
-    vector<Vec4f> filter;
-    for (auto & it : pc.circleGroups) {
-        if (it.circles.size() == 2) {
-            filter.push_back(it.getPoint());
-        }
-    }
+    //grid 0.000463
 
     PatternMatrix pm(cols, rows);
     pm.run(pc);
-
     if (pm.isValid) {
         for(auto& it: pm.circles) {
             Point center(cvRound(it->x), cvRound(it->y));
@@ -95,6 +92,8 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
             }
         }
     }
+
+
     resultData.matSrc = resultCenter;
     resultData.matContours = resultContours;
     resultData.numValids = pm.numberValids();
