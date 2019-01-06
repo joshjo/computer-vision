@@ -42,12 +42,14 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
     float a; //mjor
     float b; //minor
     //proc0.00132
+    double indexCircularity = 0;
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
-        if( contours[idx].size() > 5 && (hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ) )
+        //if( contours[idx].size() > 5 && (hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ) )
+        if((hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ))
         {
 
-            rectRot = fitEllipse(contours[idx]);
+           /*rectRot = fitEllipse(contours[idx]);
             if(rectRot.size.width< 50 )
             {
                 if(rectRot.size.width > rectRot.size.height)
@@ -59,7 +61,7 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
                     b = rectRot.size.width/2 ;
                     a =rectRot.size.height/2;
                 }
-                if( a/b > 1 && a/b <1.5)
+                if( a/b > 0.5 && a/b < 1.7)
                 {
                     //cout << " ratio: " << a /b;
                     ellipse( resultContours,rectRot, Scalar(255,0,255) );
@@ -68,12 +70,24 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
                     circleTemp[2] =  rectRot.size.width/2;//radio
                     pc.add(circleTemp);
                 }
-            }
+            }*/
+            indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
+
+                       Rect rect = boundingRect(contours[idx]);
+                       if(indexCircularity > 0.65)
+                       {
+                           drawContours( resultContours, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
+                           Moments m = moments(contours[idx]);
+                           circleTemp[0] =  m.m10/m.m00; //X center
+                           circleTemp[1] =  m.m01/m.m00; //Y center
+                           circleTemp[2] =  rect.width / 2;//radio
+                           pc.add(circleTemp);
+
+           }
         }
     }
 
-    //grid 0.000463
-
+     //grid 0.000463
     PatternMatrix pm(cols, rows);
     pm.run(pc);
     if (pm.isValid) {
