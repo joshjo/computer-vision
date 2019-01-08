@@ -90,7 +90,8 @@ void MainWindow::on_pushButton_clicked()
     {
         const char* name = nameFile.c_str();
 
-        Mat matOriginal,matProcess, matGray, matThresh, matResult;
+        Mat matOriginal,matProcess, matGray, matThresh;
+        Data result;
         CvCapture* cap = cvCaptureFromAVI(name);
         IplImage* frame = cvQueryFrame( cap );
 
@@ -110,33 +111,39 @@ void MainWindow::on_pushButton_clicked()
         }
 
         namedWindow("josue", WINDOW_AUTOSIZE);
+        namedWindow("Liz", WINDOW_AUTOSIZE);
+
 
         while( key != 'x' )
         {
             frame = cvQueryFrame( cap );
             if( !frame ) break;
             matOriginal = cv::cvarrToMat(frame);
+            result.matSrc = matOriginal.clone();
+            result.matContours = matOriginal.clone();
+
             t0=clock();
             matGray = objCal->grayScale(matOriginal); //0.001824
             matThresh = objCal->thresholdMat(matGray); //0.001669
-            matResult = matThresh.clone();
-            Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols); //0.006227
+            objCal->calculateCenters(result,  matThresh.clone(), rows, cols); //0.006227
             t1 = clock();
+
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             cout << " Time: " << time << endl;
 
             total++;
 
-
             if(result.numValids != (rows * cols)){
                 countNoReconocidos ++;
             }
+            cout << result.numValids << endl;
 
-            ui->lblTime->setText(QString::number(time));
+            ui->lblTime->setText(QString::number(time/(total-countNoReconocidos)));
             ui->lblNoREconocidos->setText(QString::number(countNoReconocidos));
             ui->lblNumTotal->setText(QString::number(total));
             ui->lblReconodicos->setText(QString::number(total - countNoReconocidos));
 
+             imshow("Liz",  result.matContours);
             imshow("josue", result.matSrc);
 
 //            QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);

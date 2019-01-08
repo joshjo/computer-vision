@@ -19,7 +19,7 @@ public:
 
     Mat grayScale(Mat src);
     Mat thresholdMat(Mat src);
-    Data calculateCenters(Mat original, Mat src, int rows, int cols);
+    Data calculateCenters(Data resultData, Mat src, int rows, int cols);
     const double PI =3.141592653589793238463;
 
 };
