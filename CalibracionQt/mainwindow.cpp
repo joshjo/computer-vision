@@ -1,14 +1,19 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <sys/stat.h>
+
+
+bool doesExist (const std::string& name) {
+  struct stat buffer;
+  return (stat (name.c_str(), &buffer) == 0);
+}
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    ui->label_4->hide();
-    ui->gvDilate->hide();
 
 
     scene = new QGraphicsScene(this);
@@ -19,9 +24,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     sceneBinary = new QGraphicsScene(this);
     ui->gvUmbral->setScene(sceneBinary);
-
-    sceneDilate = new QGraphicsScene(this);
-    ui->gvDilate->setScene(sceneDilate);
 
     sceneEdge = new QGraphicsScene(this);
     ui->gvEdge->setScene(sceneEdge);
@@ -40,6 +42,46 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+
+
+void MainWindow::on_calibrateBtn_clicked()
+{
+    if( ! verifyParameters()) {
+        return;
+    }
+//    int num_imgs = 32;
+//    float radius = 0.0243;
+//    Mat img, matProcess, matGray, matThresh, matResult;
+
+//    vector< vector< Point3f > > object_points;
+//    vector< vector< Point2f > > image_points;
+
+//    for (int k = 1; k <= num_imgs; k++) {
+//        char img_file[100];
+//        sprintf(img_file, "images/image_%02d.png", k);
+//        if(!doesExist(img_file)) {
+//            cout << "Can't find image" << img_file << endl;
+//            continue;
+//        }
+//        img = imread(img_file, CV_LOAD_IMAGE_COLOR);
+
+//        matGray = objCal->grayScale(img); //0.001824
+//        matThresh = objCal->thresholdMat(img); //0.001669
+//        matResult = matThresh.clone();
+//        Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols);
+//        result.matSrc;
+
+//        vector< Point3f > obj;
+//        for (int i = 0; i < board_height; i++) {
+//            for (int j = 0; j < board_width; j++){
+//                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
+//            }
+//        }
+
+//    }
+}
+
 
 void MainWindow::on_pushButton_clicked()
 {
@@ -67,6 +109,8 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
 
+        namedWindow("josue", WINDOW_AUTOSIZE);
+
         while( key != 'x' )
         {
             frame = cvQueryFrame( cap );
@@ -81,89 +125,67 @@ void MainWindow::on_pushButton_clicked()
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             cout << " Time: " << time << endl;
 
-
             total++;
-            if(result.numValids == 0)
+
+
+            if(result.numValids != (rows * cols)){
                 countNoReconocidos ++;
+            }
 
             ui->lblTime->setText(QString::number(time));
             ui->lblNoREconocidos->setText(QString::number(countNoReconocidos));
             ui->lblNumTotal->setText(QString::number(total));
             ui->lblReconodicos->setText(QString::number(total - countNoReconocidos));
 
-            QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
-            image = image.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-            QPixmap pixmap = QPixmap::fromImage(image);
-            scene->addPixmap(pixmap);
-            ui->gvOriginal->setScene(scene);
+            imshow("josue", result.matSrc);
 
-            //Gray
-            QImage imageGray((unsigned char*) matGray.data,matGray.cols, matGray.rows, QImage::Format_Grayscale8);
-            imageGray = imageGray.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-            QPixmap pixmapGray = QPixmap::fromImage(imageGray);
-            sceneGray->addPixmap(pixmapGray);
-            ui->gvGrayScale->setScene(sceneGray);
+//            QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
+//            image = image.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+//            QPixmap pixmap = QPixmap::fromImage(image);
+//            scene->addPixmap(pixmap);
+//            ui->gvOriginal->setScene(scene);
 
-            //umbral
-            QImage imageBinary((unsigned char*) matThresh.data,matThresh.cols, matThresh.rows, QImage::Format_Grayscale8);
-            imageBinary = imageBinary.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-            QPixmap pixmapBinary = QPixmap::fromImage(imageBinary);
-            sceneBinary->addPixmap(pixmapBinary);
-            ui->gvUmbral->setScene(sceneBinary);
+//            //Gray
+//            QImage imageGray((unsigned char*) matGray.data,matGray.cols, matGray.rows, QImage::Format_Grayscale8);
+//            imageGray = imageGray.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+//            QPixmap pixmapGray = QPixmap::fromImage(imageGray);
+//            sceneGray->addPixmap(pixmapGray);
+//            ui->gvGrayScale->setScene(sceneGray);
 
-            //Canny
-            QImage imageEdge((unsigned char*) result.matContours.data,result.matContours.cols, result.matContours.rows, QImage::Format_RGB888);
-            imageEdge = imageEdge.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-            QPixmap pixmapEdge = QPixmap::fromImage(imageEdge);
-            sceneEdge->addPixmap(pixmapEdge);
-            ui->gvEdge->setScene(sceneEdge);
+//            //umbral
+//            QImage imageBinary((unsigned char*) matThresh.data,matThresh.cols, matThresh.rows, QImage::Format_Grayscale8);
+//            imageBinary = imageBinary.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+//            QPixmap pixmapBinary = QPixmap::fromImage(imageBinary);
+//            sceneBinary->addPixmap(pixmapBinary);
+//            ui->gvUmbral->setScene(sceneBinary);
 
-            //Centros
-            QImage imageCenter((unsigned char*) result.matSrc.data,result.matSrc.cols, result.matSrc.rows, QImage::Format_RGB888);
-            imageCenter = imageCenter.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-            QPixmap pixmapCenter = QPixmap::fromImage(imageCenter);
-            sceneResultado->addPixmap(pixmapCenter);
-            ui->gvResultado->setScene(sceneResultado);
+//            //Canny
+//            QImage imageEdge((unsigned char*) result.matContours.data,result.matContours.cols, result.matContours.rows, QImage::Format_RGB888);
+//            imageEdge = imageEdge.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+//            QPixmap pixmapEdge = QPixmap::fromImage(imageEdge);
+//            sceneEdge->addPixmap(pixmapEdge);
+//            ui->gvEdge->setScene(sceneEdge);
+
+//            //Centros
+//            QImage imageCenter((unsigned char*) result.matSrc.data,result.matSrc.cols, result.matSrc.rows, QImage::Format_RGB888);
+//            imageCenter = imageCenter.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
+//            QPixmap pixmapCenter = QPixmap::fromImage(imageCenter);
+//            sceneResultado->addPixmap(pixmapCenter);
+//            ui->gvResultado->setScene(sceneResultado);
 
             key = cvWaitKey( 1000 / fps );
             //release
             matOriginal.release();
-            matProcess.release();
-            matGray.release();
-            matThresh.release();
-            matResult.release();
+//            matProcess.release();
+//            matGray.release();
+//            matThresh.release();
+//            matResult.release();
 
         }
         cvReleaseCapture( &cap );
 
     }
 
-}
-
-void MainWindow::on_btnAbrir_clicked()
-{
-
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Abrir video"), "",
-                                                    tr("video (*.avi)"));
-
-    if (fileName.isEmpty())
-        return;
-    else {
-        QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::information(this, tr("Error al abrir el video"),
-                                     file.errorString());
-            nameFile = "";
-            ui->lblVideo->setText("");
-            return;
-        }
-        else
-        {
-            nameFile = fileName.toStdString();
-            ui->lblVideo->setText(fileName);
-        }
-    }
 }
 
 bool MainWindow::verifyParameters()
@@ -191,4 +213,28 @@ bool MainWindow::verifyParameters()
     }
 
 
+}
+
+void MainWindow::on_openVideoBtn_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Abrir video"), "",
+                                                    tr("video (*.avi)"));
+    if (fileName.isEmpty())
+        return;
+    else {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Error al abrir el video"),
+                                     file.errorString());
+            nameFile = "";
+            ui->lblVideo->setText("");
+            return;
+        }
+        else
+        {
+            nameFile = fileName.toStdString();
+            ui->lblVideo->setText(fileName);
+        }
+    }
 }

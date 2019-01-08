@@ -24,9 +24,11 @@ public:
 private slots:
     void on_pushButton_clicked();
 
-    void on_btnAbrir_clicked();
-
     bool verifyParameters();
+
+    void on_openVideoBtn_clicked();
+
+    void on_calibrateBtn_clicked();
 
 private:
     Ui::MainWindow *ui;
