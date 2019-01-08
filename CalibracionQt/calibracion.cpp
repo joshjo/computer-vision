@@ -32,8 +32,8 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     Canny(srcThresh, srcThresh, 50, 150, 3);
     findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
 
-
     double indexCircularity = 0;
+
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
         if( !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
@@ -42,7 +42,8 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
             indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
 
             Rect rect = boundingRect(contours[idx]);
-            if(indexCircularity > 0.45)
+            //(rect.width / 2) > 1 &&
+            if( indexCircularity > 0.65)
             {
                 drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
                 Moments m = moments(contours[idx]);
@@ -50,7 +51,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
                 circleTemp[1] =  m.m01/m.m00; //Y center
                 circleTemp[2] =  rect.width / 2;//radio
                 pc.add(circleTemp);
-
+                //cout << rect.width << "[" <<circleTemp[0] <<", " <<circleTemp[1] <<", " <<circleTemp[3]  << "], "<< endl;
            }
         }
     }
