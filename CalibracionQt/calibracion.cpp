@@ -93,6 +93,7 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
     if (pm.isValid) {
         for(auto& it: pm.circles) {
             Point center(cvRound(it->x), cvRound(it->y));
+            corners.push_back(center);
             circle(resultCenter, center, it->ri, Scalar(0,0,255), 1, 8, 0 );
             circle(resultCenter, center, it->r, Scalar(0,0,255), 1, 8, 0 );
             putText(resultCenter, to_string(it->id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
@@ -106,7 +107,6 @@ Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int co
             }
         }
     }
-
 
     resultData.matSrc = resultCenter;
     resultData.matContours = resultContours;

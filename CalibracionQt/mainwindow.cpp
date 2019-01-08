@@ -50,36 +50,62 @@ void MainWindow::on_calibrateBtn_clicked()
     if( ! verifyParameters()) {
         return;
     }
-//    int num_imgs = 32;
-//    float radius = 0.0243;
-//    Mat img, matProcess, matGray, matThresh, matResult;
 
-//    vector< vector< Point3f > > object_points;
-//    vector< vector< Point2f > > image_points;
+    int num_imgs = 32;
+    float radius = 0.0243;
+    Mat img, matProcess, matGray, matThresh, matResult;
 
-//    for (int k = 1; k <= num_imgs; k++) {
-//        char img_file[100];
-//        sprintf(img_file, "images/image_%02d.png", k);
+    vector< vector< Point3f > > object_points;
+    vector< vector< Point2f > > image_points;
+
+    for (int k = 1; k <= num_imgs; k++) {
+        char img_file[100];
+        sprintf(img_file, "/home/josue/Devel/images/CalibracionQt/images/image_%02d.png", k);
+//        cout << "img_file: " << img_file << endl;
 //        if(!doesExist(img_file)) {
-//            cout << "Can't find image" << img_file << endl;
+//            cout << "Can't find image: " << img_file << endl;
 //            continue;
 //        }
-//        img = imread(img_file, CV_LOAD_IMAGE_COLOR);
+        img = imread(img_file, CV_LOAD_IMAGE_COLOR);
+        Calibracion cal;
 
-//        matGray = objCal->grayScale(img); //0.001824
-//        matThresh = objCal->thresholdMat(img); //0.001669
-//        matResult = matThresh.clone();
-//        Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols);
-//        result.matSrc;
+        matGray = cal.grayScale(img); //0.001824
+        matThresh = cal.thresholdMat(matGray); //0.001669
+        matResult = matThresh.clone();
+        Data result = cal.calculateCenters(img, matResult, rows, cols);
+        result.matSrc;
 
-//        vector< Point3f > obj;
-//        for (int i = 0; i < board_height; i++) {
-//            for (int j = 0; j < board_width; j++){
-//                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
-//            }
-//        }
+        vector< Point3f > obj;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
+            }
+        }
 
+        if(result.numValids == (rows * cols)){
+            object_points.push_back(obj);
+            image_points.push_back(cal.corners);
+        }
+    }
+
+    Mat K;
+    Mat D;
+    vector< Mat > rvecs, tvecs;
+
+    int flag = 0;
+    flag |= CV_CALIB_FIX_K4;
+    flag |= CV_CALIB_FIX_K5;
+//    for(auto it:object_points) {
+//        cout << "ox: " << it.size() <<endl;
 //    }
+//    for(auto it:image_points) {
+//        cout << "ix: " << it.size() <<endl;
+//    }
+//    cout << "obj points: " << object_points.size() << endl;
+//    cout << "img points: " << image_points.size() << endl;
+     calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
+     cout << "K: " << K << endl;
+     cout << "D: " << D << endl;
 }
 
 
@@ -176,10 +202,10 @@ void MainWindow::on_pushButton_clicked()
             key = cvWaitKey( 1000 / fps );
             //release
             matOriginal.release();
-//            matProcess.release();
-//            matGray.release();
-//            matThresh.release();
-//            matResult.release();
+            matProcess.release();
+            matGray.release();
+            matThresh.release();
+            matResult.release();
 
         }
         cvReleaseCapture( &cap );
