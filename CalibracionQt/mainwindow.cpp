@@ -163,7 +163,7 @@ void MainWindow::on_pushButton_clicked()
             count++;
 
 
-            if(result.numValids == (rows * cols)){
+            if(result.numValids > 0){
                 timeTotal += time;
                 countRecognized++;
             }
@@ -201,7 +201,6 @@ void MainWindow::on_pushButton_clicked()
             ui->lblFinal->setPixmap(QPixmap::fromImage(imageFinal));
 
             key = cvWaitKey( 1000 / fps );
-            count++;
             if ((count % step) == 0) {
                 calibrateFrames.push_back(matOriginal.clone());
             }
