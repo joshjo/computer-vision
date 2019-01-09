@@ -30,6 +30,8 @@ private slots:
 
     void on_calibrateBtn_clicked();
 
+    void calibration(vector<Mat> & calibrateFrames);
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
@@ -46,6 +48,8 @@ private:
     int rows = 0;
     int wResize = 420;
     int hResize = 236;
+
+    vector <Mat> calibrateFrames;
 };
 
 #endif // MAINWINDOW_H

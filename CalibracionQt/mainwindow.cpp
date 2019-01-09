@@ -43,43 +43,77 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::calibration(vector<Mat> & calibrateFrames) {
+    float radius = 0.0243;
+    Mat img, matGray, matThresh, matResult;
+
+    vector< vector< Point3f > > object_points;
+    vector< vector< Point2f > > image_points;
+    int number;
+
+    char img_file[100];
+
+
+
+    for(int i = 0; i < calibrateFrames.size(); i++) {
+        img = calibrateFrames[i];
+
+        Calibracion cal;
+        matGray = cal.grayScale(img);
+        matThresh = cal.thresholdMat(matGray);
+        matResult = matThresh.clone();
+        Data result = cal.calculateCenters(img, matResult, rows, cols);
+
+        vector< Point3f > obj;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
+            }
+        }
+
+        if(result.numValids == (rows * cols)){
+            object_points.push_back(obj);
+            image_points.push_back(cal.corners);
+        }
+    }
+
+    ui->calibrationFramesLabel->setText(QString::number(image_points.size()));
+    if (image_points.size() > 10) {
+        Mat K;
+        Mat D;
+        vector< Mat > rvecs, tvecs;
+        int flag = 0;
+        flag |= CV_CALIB_FIX_K4;
+        flag |= CV_CALIB_FIX_K5;
+        calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
+        cout << "K: " << K << endl;
+        cout << "D: " << D << endl;
+
+//        ostringstream oss;
+//        oss << "D = " << D << endl;
+        string distortion = "";
+
+        QString qstr = "x";
+
+        for(int i = 0; i < D.rows; i++)
+        {
+            const double* Mi = D.ptr<double>(i);
+            for(int j = 0; j < D.cols; j++) {
+                qstr += QString::number(Mi[j]) + " \n";
+            }
+        }
+
+        ui->fxLabel->setText( QString::number(K.at<double>(0, 0)) );
+        ui->fyLabel->setText( QString::number(K.at<double>(1, 1)) );
+        ui->cxLabel->setText( QString::number(K.at<double>(0, 2)) );
+        ui->cyLabel->setText( QString::number(K.at<double>(1, 2)) );
+        ui->distortionLabel->setText( qstr );
+    }
+}
 
 
 void MainWindow::on_calibrateBtn_clicked()
 {
-    if( ! verifyParameters()) {
-        return;
-    }
-//    int num_imgs = 32;
-//    float radius = 0.0243;
-//    Mat img, matProcess, matGray, matThresh, matResult;
-
-//    vector< vector< Point3f > > object_points;
-//    vector< vector< Point2f > > image_points;
-
-//    for (int k = 1; k <= num_imgs; k++) {
-//        char img_file[100];
-//        sprintf(img_file, "images/image_%02d.png", k);
-//        if(!doesExist(img_file)) {
-//            cout << "Can't find image" << img_file << endl;
-//            continue;
-//        }
-//        img = imread(img_file, CV_LOAD_IMAGE_COLOR);
-
-//        matGray = objCal->grayScale(img); //0.001824
-//        matThresh = objCal->thresholdMat(img); //0.001669
-//        matResult = matThresh.clone();
-//        Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols);
-//        result.matSrc;
-
-//        vector< Point3f > obj;
-//        for (int i = 0; i < board_height; i++) {
-//            for (int j = 0; j < board_width; j++){
-//                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
-//            }
-//        }
-
-//    }
 }
 
 
@@ -90,16 +124,24 @@ void MainWindow::on_pushButton_clicked()
     {
         const char* name = nameFile.c_str();
 
-        Mat matOriginal,matProcess, matGray, matThresh, matResult;
+        Mat matOriginal, matProcess, matGray, matThresh, matResult;
         CvCapture* cap = cvCaptureFromAVI(name);
+
+        int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
+
+        int step = totalFrames / 35;
+
+        cout << "totalFrames: " << totalFrames << endl;
+
         IplImage* frame = cvQueryFrame( cap );
 
         int key = 0;
         int i = 0;
         int fps = ( int )cvGetCaptureProperty( cap, CV_CAP_PROP_FPS );
+
         //Reconocidos
         int countNoReconocidos = 0;
-        int total = 0;
+        int count = 0;
         //Time
         unsigned t0, t1, tinit;
         double time;
@@ -109,7 +151,7 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
 
-        namedWindow("josue", WINDOW_AUTOSIZE);
+
 
         while( key != 'x' )
         {
@@ -123,10 +165,6 @@ void MainWindow::on_pushButton_clicked()
             Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols); //0.006227
             t1 = clock();
             time = (double(t1-t0)/CLOCKS_PER_SEC);
-            cout << " Time: " << time << endl;
-
-            total++;
-
 
             if(result.numValids != (rows * cols)){
                 countNoReconocidos ++;
@@ -134,10 +172,10 @@ void MainWindow::on_pushButton_clicked()
 
             ui->lblTime->setText(QString::number(time));
             ui->lblNoREconocidos->setText(QString::number(countNoReconocidos));
-            ui->lblNumTotal->setText(QString::number(total));
-            ui->lblReconodicos->setText(QString::number(total - countNoReconocidos));
+            ui->lblNumTotal->setText(QString::number(count));
+            ui->lblReconodicos->setText(QString::number(count - countNoReconocidos));
 
-            imshow("josue", result.matSrc);
+            // imshow("josue", result.matSrc);
 
 //            QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
 //            image = image.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
@@ -174,6 +212,10 @@ void MainWindow::on_pushButton_clicked()
 //            ui->gvResultado->setScene(sceneResultado);
 
             key = cvWaitKey( 1000 / fps );
+            count++;
+            if ((count % step) == 0) {
+                calibrateFrames.push_back(matOriginal.clone());
+            }
             //release
             matOriginal.release();
 //            matProcess.release();
@@ -181,7 +223,11 @@ void MainWindow::on_pushButton_clicked()
 //            matThresh.release();
 //            matResult.release();
 
+
+
         }
+        calibration(calibrateFrames);
+
         cvReleaseCapture( &cap );
 
     }
@@ -224,6 +270,8 @@ void MainWindow::on_openVideoBtn_clicked()
         return;
     else {
         QFile file(fileName);
+        objCal = new Calibracion();
+
         if (!file.open(QIODevice::ReadOnly)) {
             QMessageBox::information(this, tr("Error al abrir el video"),
                                      file.errorString());
