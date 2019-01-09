@@ -32,6 +32,8 @@ private slots:
 
     void calibration(vector<Mat> & calibrateFrames);
 
+    void reset();
+
 private:
     Ui::MainWindow *ui;
 

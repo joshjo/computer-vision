@@ -111,6 +111,7 @@ void MainWindow::on_pushButton_clicked()
 
     if(verifyParameters())
     {
+        reset();
         const char* name = nameFile.c_str();
         //QImage
         QImage image, imageGray, imageBinary, imageEdge, imageFinal;
@@ -214,10 +215,13 @@ void MainWindow::on_pushButton_clicked()
 
 
         }
+
+        ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
+        cvReleaseCapture( &cap );
+
         calibration(calibrateFrames);
 
-        cvReleaseCapture( &cap );
-        ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
+
     }
 
 }
@@ -251,6 +255,7 @@ bool MainWindow::verifyParameters()
 
 void MainWindow::on_openVideoBtn_clicked()
 {
+    reset();
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Abrir video"), "",
                                                     tr("video (*.avi)"));
@@ -273,4 +278,32 @@ void MainWindow::on_openVideoBtn_clicked()
             ui->lblVideo->setText(fileName);
         }
     }
+}
+
+void MainWindow::reset()
+{
+    ui->lblVideo->setText("");
+    ui->txtColumnas->setText("");
+    ui->txtFilas->setText("");
+    ui->lblNumTotal->setText("");
+    ui->lblReconodicos->setText("");
+    ui->lblNoREconocidos->setText("");
+    ui->lblTime->setText("");
+    ui->lblAvgTime->setText("");
+
+    ui->calibrationFramesLabel->setText("0");
+    ui->fxLabel->setText("0");
+    ui->fyLabel->setText("0");
+    ui->cxLabel->setText("0");
+    ui->cyLabel->setText("0");
+    ui->distortionLabel->setText("0");
+
+    //Imagenes
+    nameFile = "";
+    ui->lblOriginal->clear();
+    ui->lblGrayScale->clear();
+    ui->lblThreshold->clear();
+    ui->lblContour->clear();
+    ui->lblFinal->clear();
+
 }

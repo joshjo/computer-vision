@@ -42,7 +42,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
 
             Rect rect = boundingRect(contours[idx]);
             //(rect.width / 2) > 1 &&
-            if( indexCircularity > 0.65)
+            if( rect.width > 1 && indexCircularity > 0.65)
             {
                 drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
                 Moments m = moments(contours[idx]);
