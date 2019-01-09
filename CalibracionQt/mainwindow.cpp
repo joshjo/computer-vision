@@ -111,7 +111,6 @@ void MainWindow::on_pushButton_clicked()
 
     if(verifyParameters())
     {
-        reset();
         const char* name = nameFile.c_str();
         //QImage
         QImage image, imageGray, imageBinary, imageEdge, imageFinal;
