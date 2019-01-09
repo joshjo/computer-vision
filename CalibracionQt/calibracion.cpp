@@ -6,112 +6,74 @@ Calibracion ::Calibracion()
 
 }
 
-Mat Calibracion::grayScale(Mat src)
+void Calibracion::grayScale(Mat &greyColor, Mat src)
 {
-    Mat greyColor;
     cvtColor(src, greyColor, CV_BGR2GRAY);
-    return greyColor;
 }
 
-Mat Calibracion::thresholdMat(Mat src)
+void Calibracion::thresholdMat(Mat &thresh, Mat src)
 {
-    Mat thresh;
     GaussianBlur(src, thresh,Size(9,9), 2, 2);
-    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV,11,6);
-    return thresh;
+    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
 }
 
-Data Calibracion::calculateCenters(Mat original, Mat srcThresh, int rows, int cols)
+void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, int cols)
 {
 
-    Data resultData;
-    Mat resultCenter = original.clone();
-    Mat resultContours = original.clone();
     ProcessCircles pc;
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-
-    Canny(srcThresh, srcThresh, 50, 150, 3); //0.002818
-    findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
 
     int idx = 0;
     Vec3f circleTemp;
     RotatedRect rectRot;
 
+    Canny(srcThresh, srcThresh, 50, 150, 3);
+    findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
 
-    float a; //mjor
-    float b; //minor
-    //proc0.00132
     double indexCircularity = 0;
+
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
-        //if( contours[idx].size() > 5 && (hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ) )
-        if((hierarchy[idx][2] > -1 || hierarchy[idx][3] > -1 ))
+        if( !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
         {
 
-           /*rectRot = fitEllipse(contours[idx]);
-            if(rectRot.size.width< 50 )
-            {
-                if(rectRot.size.width > rectRot.size.height)
-                {
-                    a = rectRot.size.width/2 ;
-                    b =rectRot.size.height/2;
-                } else
-                {
-                    b = rectRot.size.width/2 ;
-                    a =rectRot.size.height/2;
-                }
-                if( a/b > 0.5 && a/b < 1.7)
-                {
-                    //cout << " ratio: " << a /b;
-                    ellipse( resultContours,rectRot, Scalar(255,0,255) );
-                    circleTemp[0] =  rectRot.center.x; //X center
-                    circleTemp[1] = rectRot.center.y; //Y center
-                    circleTemp[2] =  rectRot.size.width/2;//radio
-                    pc.add(circleTemp);
-                }
-            }*/
             indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
 
-                       Rect rect = boundingRect(contours[idx]);
-                       if(indexCircularity > 0.65)
-                       {
-                           drawContours( resultContours, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
-                           Moments m = moments(contours[idx]);
-                           circleTemp[0] =  m.m10/m.m00; //X center
-                           circleTemp[1] =  m.m01/m.m00; //Y center
-                           circleTemp[2] =  rect.width / 2;//radio
-                           pc.add(circleTemp);
-
+            Rect rect = boundingRect(contours[idx]);
+            //(rect.width / 2) > 1 &&
+            if( indexCircularity > 0.65)
+            {
+                drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_FILLED, 8, hierarchy );
+                Moments m = moments(contours[idx]);
+                circleTemp[0] =  m.m10/m.m00; //X center
+                circleTemp[1] =  m.m01/m.m00; //Y center
+                circleTemp[2] =  rect.width / 2;//radio
+                pc.add(circleTemp);
+                //cout << rect.width << "[" <<circleTemp[0] <<", " <<circleTemp[1] <<", " <<circleTemp[3]  << "], "<< endl;
            }
         }
     }
 
-     //grid 0.000463
     PatternMatrix pm(cols, rows);
     pm.run(pc);
     if (pm.isValid) {
         for(auto& it: pm.circles) {
             Point center(cvRound(it->x), cvRound(it->y));
             corners.push_back(center);
-            circle(resultCenter, center, it->ri, Scalar(0,0,255), 1, 8, 0 );
-            circle(resultCenter, center, it->r, Scalar(0,0,255), 1, 8, 0 );
-            putText(resultCenter, to_string(it->id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
+            circle(resultData.matSrc, center, it->ri, Scalar(0,0,255), 1, 8, 0 );
+            circle(resultData.matSrc, center, it->r, Scalar(0,0,255), 1, 8, 0 );
+            putText(resultData.matSrc, to_string(it->id), center, FONT_HERSHEY_TRIPLEX, 1, Scalar(255,255,255));
         }
 
         for (int i = 0; i < (pm.matrix->size() - 1); i++) {
             if(pm.matrix->at(i) != NULL && pm.matrix->at(i + 1) != NULL) {
                 Point p1(cvRound(pm.matrix->at(i)->x), cvRound(pm.matrix->at(i)->y));
                 Point p2(cvRound(pm.matrix->at(i + 1)->x), cvRound(pm.matrix->at(i + 1)->y));
-                line(resultCenter, p1, p2, Scalar(255, 255, 255), 2);
+                line(resultData.matSrc, p1, p2, Scalar(255, 255, 255), 2);
             }
         }
     }
 
-
-    resultData.matSrc = resultCenter;
-    resultData.matContours = resultContours;
     resultData.numValids = pm.numberValids();
-    return resultData;
-
 }

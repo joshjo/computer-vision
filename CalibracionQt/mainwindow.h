@@ -34,13 +34,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-    QGraphicsScene *sceneGray;
-    QGraphicsScene *sceneBinary;
-    QGraphicsScene *sceneDilate;
-    QGraphicsScene *sceneEdge;
-    QGraphicsScene *sceneResultado;
-
 
     Calibracion *objCal;
     string nameFile;

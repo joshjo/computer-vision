@@ -15,22 +15,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-    scene = new QGraphicsScene(this);
-    ui->gvOriginal->setScene(scene);
-
-    sceneGray = new QGraphicsScene(this);
-    ui->gvGrayScale->setScene(sceneGray);
-
-    sceneBinary = new QGraphicsScene(this);
-    ui->gvUmbral->setScene(sceneBinary);
-
-    sceneEdge = new QGraphicsScene(this);
-    ui->gvEdge->setScene(sceneEdge);
-
-    sceneResultado = new QGraphicsScene(this);
-    ui->gvResultado->setScene(sceneResultado);
-
     ui->txtColumnas->setValidator(new QIntValidator);
     ui->txtFilas->setValidator(new QIntValidator);
 
@@ -59,10 +43,16 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
         img = calibrateFrames[i];
 
         Calibracion cal;
-        matGray = cal.grayScale(img);
-        matThresh = cal.thresholdMat(matGray);
+
+        Data result;
+        result.matSrc = img.clone();
+        result.matContours = img.clone();
+
+        cal.grayScale(matGray, img);
+        cal.thresholdMat(matThresh, matGray);
         matResult = matThresh.clone();
-        Data result = cal.calculateCenters(img, matResult, rows, cols);
+
+        cal.calculateCenters(result, matThresh.clone(), rows, cols);
 
         vector< Point3f > obj;
         for (int i = 0; i < rows; i++) {
@@ -78,22 +68,21 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
     }
 
     ui->calibrationFramesLabel->setText(QString::number(image_points.size()));
-    if (image_points.size() > 10) {
+
+    if (image_points.size() > 10 && (object_points.size() == image_points.size())) {
         Mat K;
         Mat D;
         vector< Mat > rvecs, tvecs;
         int flag = 0;
         flag |= CV_CALIB_FIX_K4;
         flag |= CV_CALIB_FIX_K5;
+        if (image_points.size() > 25) {
+            image_points.erase(image_points.begin() + 25, image_points.end());
+            object_points.erase(object_points.begin() + 25, object_points.end());
+        }
         calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
-        cout << "K: " << K << endl;
-        cout << "D: " << D << endl;
 
-//        ostringstream oss;
-//        oss << "D = " << D << endl;
-        string distortion = "";
-
-        QString qstr = "x";
+        QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
         {
@@ -123,8 +112,11 @@ void MainWindow::on_pushButton_clicked()
     if(verifyParameters())
     {
         const char* name = nameFile.c_str();
-
-        Mat matOriginal, matProcess, matGray, matThresh, matResult;
+        //QImage
+        QImage image, imageGray, imageBinary, imageEdge, imageFinal;
+        //Mats
+        Mat matOriginal,matProcess, matGray, matThresh;
+        Data result;
         CvCapture* cap = cvCaptureFromAVI(name);
 
         int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
@@ -136,80 +128,77 @@ void MainWindow::on_pushButton_clicked()
         IplImage* frame = cvQueryFrame( cap );
 
         int key = 0;
-        int i = 0;
         int fps = ( int )cvGetCaptureProperty( cap, CV_CAP_PROP_FPS );
 
         //Reconocidos
-        int countNoReconocidos = 0;
+        int countRecognized = 0;
         int count = 0;
         //Time
-        unsigned t0, t1, tinit;
-        double time;
+        unsigned t0, t1;
+        double time = 0, timeTotal = 0;
         if ( !cap )
         {
             fprintf( stderr, "Cannot open AVI!\n" );
             return;
         }
 
-
-
+        //namedWindow("josue", WINDOW_AUTOSIZE);
+        //namedWindow("liz", WINDOW_AUTOSIZE);
         while( key != 'x' )
         {
             frame = cvQueryFrame( cap );
             if( !frame ) break;
             matOriginal = cv::cvarrToMat(frame);
-            t0=clock();
-            matGray = objCal->grayScale(matOriginal); //0.001824
-            matThresh = objCal->thresholdMat(matGray); //0.001669
-            matResult = matThresh.clone();
-            Data result = objCal->calculateCenters(matOriginal, matResult, rows, cols); //0.006227
-            t1 = clock();
-            time = (double(t1-t0)/CLOCKS_PER_SEC);
+            result.matSrc = matOriginal.clone();
+            result.matContours = matOriginal.clone();
 
-            if(result.numValids != (rows * cols)){
-                countNoReconocidos ++;
+
+            t0=clock();
+            objCal->grayScale(matGray, matOriginal);
+            objCal->thresholdMat(matThresh, matGray);
+            objCal->calculateCenters(result, matThresh.clone(), rows, cols);
+            t1 = clock();
+
+            time = (double(t1-t0)/CLOCKS_PER_SEC);
+            count++;
+
+
+            if(result.numValids == (rows * cols)){
+                timeTotal += time;
+                countRecognized++;
             }
 
             ui->lblTime->setText(QString::number(time));
-            ui->lblNoREconocidos->setText(QString::number(countNoReconocidos));
+            ui->lblNoREconocidos->setText(QString::number(count - countRecognized));
             ui->lblNumTotal->setText(QString::number(count));
-            ui->lblReconodicos->setText(QString::number(count - countNoReconocidos));
+            ui->lblReconodicos->setText(QString::number(countRecognized));
 
-            // imshow("josue", result.matSrc);
+            //imshow("josue", result.matSrc);
+            //imshow("liz", result.matContours);
 
-//            QImage image((unsigned char*) matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
-//            image = image.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-//            QPixmap pixmap = QPixmap::fromImage(image);
-//            scene->addPixmap(pixmap);
-//            ui->gvOriginal->setScene(scene);
+            image = QImage(matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
+            image = image.scaled(ui->lblOriginal->width(), ui->lblOriginal->height(), Qt::KeepAspectRatio);
+            ui->lblOriginal->setPixmap(QPixmap::fromImage(image));
 
-//            //Gray
-//            QImage imageGray((unsigned char*) matGray.data,matGray.cols, matGray.rows, QImage::Format_Grayscale8);
-//            imageGray = imageGray.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-//            QPixmap pixmapGray = QPixmap::fromImage(imageGray);
-//            sceneGray->addPixmap(pixmapGray);
-//            ui->gvGrayScale->setScene(sceneGray);
+            //Gray
+            imageGray = QImage( matGray.data,matGray.cols, matGray.rows, QImage::Format_Grayscale8);
+            imageGray = imageGray.scaled(ui->lblGrayScale->width(), ui->lblGrayScale->height(), Qt::KeepAspectRatio);
+            ui->lblGrayScale->setPixmap(QPixmap::fromImage(imageGray));
 
-//            //umbral
-//            QImage imageBinary((unsigned char*) matThresh.data,matThresh.cols, matThresh.rows, QImage::Format_Grayscale8);
-//            imageBinary = imageBinary.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-//            QPixmap pixmapBinary = QPixmap::fromImage(imageBinary);
-//            sceneBinary->addPixmap(pixmapBinary);
-//            ui->gvUmbral->setScene(sceneBinary);
+            //umbral
+            imageBinary = QImage(matThresh.data,matThresh.cols, matThresh.rows, QImage::Format_Grayscale8);
+            imageBinary = imageBinary.scaled(ui->lblThreshold->width(), ui->lblThreshold->height(), Qt::KeepAspectRatio);
+            ui->lblThreshold->setPixmap(QPixmap::fromImage(imageBinary));
 
-//            //Canny
-//            QImage imageEdge((unsigned char*) result.matContours.data,result.matContours.cols, result.matContours.rows, QImage::Format_RGB888);
-//            imageEdge = imageEdge.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-//            QPixmap pixmapEdge = QPixmap::fromImage(imageEdge);
-//            sceneEdge->addPixmap(pixmapEdge);
-//            ui->gvEdge->setScene(sceneEdge);
+            //Canny
+            imageEdge = QImage(result.matContours.data,result.matContours.cols, result.matContours.rows, QImage::Format_RGB888);
+            imageEdge = imageEdge.scaled(ui->lblContour->width(), ui->lblContour->height(), Qt::KeepAspectRatio);
+            ui->lblContour->setPixmap(QPixmap::fromImage(imageEdge));
 
-//            //Centros
-//            QImage imageCenter((unsigned char*) result.matSrc.data,result.matSrc.cols, result.matSrc.rows, QImage::Format_RGB888);
-//            imageCenter = imageCenter.scaled(wResize, hResize, Qt::KeepAspectRatio); //pixmap = QPixmap::fromImage(QImage((unsigned char*) mat.data, mat.cols, mat.rows, QImage::Format_RGB888));
-//            QPixmap pixmapCenter = QPixmap::fromImage(imageCenter);
-//            sceneResultado->addPixmap(pixmapCenter);
-//            ui->gvResultado->setScene(sceneResultado);
+            //Centros
+            imageFinal = QImage( result.matSrc.data,result.matSrc.cols, result.matSrc.rows, QImage::Format_RGB888);
+            imageFinal = imageFinal.scaled(ui->lblFinal->width(), ui->lblFinal->height(), Qt::KeepAspectRatio);
+            ui->lblFinal->setPixmap(QPixmap::fromImage(imageFinal));
 
             key = cvWaitKey( 1000 / fps );
             count++;
@@ -218,10 +207,10 @@ void MainWindow::on_pushButton_clicked()
             }
             //release
             matOriginal.release();
-//            matProcess.release();
-//            matGray.release();
-//            matThresh.release();
-//            matResult.release();
+            matProcess.release();
+            matGray.release();
+            matThresh.release();
+
 
 
 
@@ -229,7 +218,7 @@ void MainWindow::on_pushButton_clicked()
         calibration(calibrateFrames);
 
         cvReleaseCapture( &cap );
-
+        ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
     }
 
 }
