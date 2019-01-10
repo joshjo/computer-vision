@@ -24,19 +24,18 @@ public:
 private slots:
     void on_pushButton_clicked();
 
-    void on_btnAbrir_clicked();
-
     bool verifyParameters();
+
+    void on_openVideoBtn_clicked();
+
+    void on_calibrateBtn_clicked();
+
+    void calibration(vector<Mat> & calibrateFrames);
+
+    void reset();
 
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-    QGraphicsScene *sceneGray;
-    QGraphicsScene *sceneBinary;
-    QGraphicsScene *sceneDilate;
-    QGraphicsScene *sceneEdge;
-    QGraphicsScene *sceneResultado;
-
 
     Calibracion *objCal;
     string nameFile;
@@ -44,6 +43,8 @@ private:
     int rows = 0;
     int wResize = 420;
     int hResize = 236;
+
+    vector <Mat> calibrateFrames;
 };
 
 #endif // MAINWINDOW_H

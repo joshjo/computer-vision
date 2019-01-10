@@ -7,404 +7,515 @@
     <x>0</x>
     <y>0</y>
     <width>1366</width>
-    <height>768</height>
+    <height>810</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGraphicsView" name="gvOriginal">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="gvGrayScale">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>40</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="gvUmbral">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>40</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="gvDilate">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>310</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="gvEdge">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>310</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Original</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>20</y>
-      <width>111</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Escala de Grises</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>20</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Threshold</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>290</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Dilatación</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>290</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Bordes</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>1250</x>
-      <y>520</y>
-      <width>90</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Inicio</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>290</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Resultado</string>
-    </property>
-   </widget>
-   <widget class="QGraphicsView" name="gvResultado">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>310</y>
-      <width>420</width>
-      <height>236</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>520</y>
-      <width>91</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Tiempo(seg.):</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lblTime">
-    <property name="geometry">
-     <rect>
-      <x>1000</x>
-      <y>520</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>380</y>
-      <width>91</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Frames:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lblNumTotal">
-    <property name="geometry">
-     <rect>
-      <x>1020</x>
-      <y>470</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>410</y>
-      <width>111</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Reconocidos:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>440</y>
-      <width>121</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>No Reconocidos:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_11">
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>470</y>
-      <width>111</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Procesados</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lblNoREconocidos">
-    <property name="geometry">
-     <rect>
-      <x>1020</x>
-      <y>440</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lblReconodicos">
-    <property name="geometry">
-     <rect>
-      <x>1020</x>
-      <y>410</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnAbrir">
-    <property name="geometry">
-     <rect>
-      <x>1250</x>
-      <y>310</y>
-      <width>90</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Abrir video</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lblVideo">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>310</y>
-      <width>331</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Video</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>1160</x>
-      <y>380</y>
-      <width>91</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Patrón:</string>
-    </property>
-   </widget>
-   <widget class="Line" name="line">
-    <property name="geometry">
-     <rect>
-      <x>1123</x>
-      <y>390</y>
-      <width>20</width>
-      <height>171</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_13">
-    <property name="geometry">
-     <rect>
-      <x>1170</x>
-      <y>410</y>
-      <width>41</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Filas:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_14">
-    <property name="geometry">
-     <rect>
-      <x>1170</x>
-      <y>440</y>
-      <width>81</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Columnas:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="txtFilas">
-    <property name="geometry">
-     <rect>
-      <x>1270</x>
-      <y>400</y>
-      <width>70</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="txtColumnas">
-    <property name="geometry">
-     <rect>
-      <x>1270</x>
-      <y>430</y>
-      <width>70</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="Line" name="line_2">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>350</y>
-      <width>461</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_9">
+    <item>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Actions</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_16">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_15">
+           <item>
+            <widget class="QPushButton" name="openVideoBtn">
+             <property name="text">
+              <string>Open</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblVideo">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_14">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Rows:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="txtFilas"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="txtColumnas"/>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Columns:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_12">
+               <item>
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>Start</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <item>
+            <widget class="QPushButton" name="calibrateBtn">
+             <property name="text">
+              <string>Calibrate</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Frames:</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Processed:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblNumTotal">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Recognized:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblReconodicos">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Unrecognized:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblNoREconocidos">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Time(sec):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblTime">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Avg. Time (sec.): </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblAvgTime">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>Process</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="1">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Grayscale</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblGrayScale">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Borders</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblContour">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="1">
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <item>
+            <widget class="QLabel" name="label_6">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Final result</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblFinal">
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="2">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Threshold</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblThreshold">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Original</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblOriginal">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>45</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="2">
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="title">
+            <string>Calibration Results:</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <layout class="QFormLayout" name="formLayout_4">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Frames used for calibration</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="calibrationFramesLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>fx</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="fxLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>fy</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLabel" name="fyLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>cx</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLabel" name="cxLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_16">
+                <property name="text">
+                 <string>cy</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLabel" name="cyLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_17">
+                <property name="text">
+                 <string>Distortion</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QLabel" name="distortionLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QLabel" name="lblWaiting">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -415,6 +526,13 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuOpen_video">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+   </widget>
+   <addaction name="menuOpen_video"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -425,6 +543,11 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
