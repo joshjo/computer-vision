@@ -26,7 +26,31 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+static double computeReprojectionErrors( const vector<vector<Point3f> >& objectPoints,
+                                         const vector<vector<Point2f> >& imagePoints,
+                                         const vector<Mat>& rvecs, const vector<Mat>& tvecs,
+                                         const Mat& cameraMatrix , const Mat& distCoeffs,
+                                         vector<float>& perViewErrors)
+{
+    vector<Point2f> imagePoints2;
+    int i, totalPoints = 0;
+    double totalErr = 0, err;
+    perViewErrors.resize(objectPoints.size());
 
+    for( i = 0; i < (int)objectPoints.size(); ++i )
+    {
+        projectPoints( Mat(objectPoints[i]), rvecs[i], tvecs[i], cameraMatrix,
+                       distCoeffs, imagePoints2);
+        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), CV_L2);
+
+        int n = (int)objectPoints[i].size();
+        perViewErrors[i] = (float) std::sqrt(err*err/n);
+        totalErr        += err*err;
+        totalPoints     += n;
+    }
+
+    return std::sqrt(totalErr/totalPoints);
+}
 void MainWindow::calibration(vector<Mat> & calibrateFrames) {
     float radius = 0.0243;
     Mat img, matGray, matThresh, matResult;
@@ -37,8 +61,9 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
 
     char img_file[100];
 
-
-
+    double rms = 0;
+    double avrTotal = 0;
+    vector<float> reprojErrs;
     for(int i = 0; i < calibrateFrames.size(); i++) {
         img = calibrateFrames[i];
 
@@ -80,8 +105,10 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
             image_points.erase(image_points.begin() + 25, image_points.end());
             object_points.erase(object_points.begin() + 25, object_points.end());
         }
-        calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
-
+        //the final re-projection error.
+        rms = calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
+        avrTotal =  computeReprojectionErrors( object_points, image_points, rvecs, tvecs,
+                                  K , D,reprojErrs);
         QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
@@ -98,6 +125,8 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
         ui->cyLabel->setText( QString::number(K.at<double>(1, 2)) );
         ui->distortionLabel->setText( qstr );
     }
+    ui->lblRMS->setText(QString::number( rms ));
+    cout << avrTotal << endl;
 }
 
 
@@ -289,7 +318,7 @@ void MainWindow::reset()
     ui->lblNoREconocidos->setText("");
     ui->lblTime->setText("");
     ui->lblAvgTime->setText("");
-
+    ui->lblRMS->setText("0" );
     ui->calibrationFramesLabel->setText("0");
     ui->fxLabel->setText("0");
     ui->fyLabel->setText("0");
