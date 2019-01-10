@@ -8,6 +8,9 @@
 #include <QMessageBox>
 #include "calibracion.h"
 
+#define CAPTURING 1
+#define CALIBRATING 2
+#define CALIBRATED 0
 
 namespace Ui {
 class MainWindow;
@@ -30,7 +33,7 @@ private slots:
 
     void on_calibrateBtn_clicked();
 
-    void calibration(vector<Mat> & calibrateFrames);
+    void calibration();
 
     void reset();
 
@@ -45,7 +48,13 @@ private:
     int hResize = 236;
     double circleSpacing = 0.0;
 
+    int modeCalibrating;
+    int framesCalibration;
+
     vector <Mat> calibrateFrames;
+
+    Mat K;
+    Mat D;
 };
 
 #endif // MAINWINDOW_H

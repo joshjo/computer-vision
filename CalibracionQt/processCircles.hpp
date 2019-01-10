@@ -203,11 +203,23 @@ struct PatternMatrix {
             avg_radius += it->radius_diff();
         }
 
+        for (int i = 0; i < xircles.size(); i++) {
+            avg_radius  += xircles[i]->radius_diff();
+//            if (xircles[i]->r >= avg_radius) {
+//                circles.push_back(xircles[i]);
+//            }
+        }
+
         avg_radius = avg_radius / xircles.size();
 
-        for(auto& it: xircles) {
-            if(it->r >= avg_radius) {
-                circles.push_back(it);
+//        for(auto& it: xircles) {
+//            if(it->r >= avg_radius) {
+//                circles.push_back(it);
+//            }
+//        }
+        for (int i = 0; i < xircles.size(); i++) {
+            if (xircles[i]->r >= avg_radius) {
+                circles.push_back(xircles[i]);
             }
         }
 

@@ -51,7 +51,9 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 
     return std::sqrt(totalErr/totalPoints);
 }
-void MainWindow::calibration(vector<Mat> & calibrateFrames) {
+
+
+void MainWindow::calibration() {
 //    float radius = 5;
     Mat img, matGray, matThresh, matResult;
 
@@ -95,8 +97,6 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
     ui->calibrationFramesLabel->setText(QString::number(image_points.size()));
 
     if (image_points.size() > 10 && (object_points.size() == image_points.size())) {
-        Mat K;
-        Mat D;
         vector< Mat > rvecs, tvecs;
         int flag = 0;
 //        flag |= CV_CALIB_FIX_K4;
@@ -140,6 +140,15 @@ void MainWindow::on_pushButton_clicked()
 
     if(verifyParameters())
     {
+        ui->calibrationFramesLabel->setText("0");
+        ui->fxLabel->setText("0");
+        ui->fyLabel->setText("0");
+        ui->cxLabel->setText("0");
+        ui->cyLabel->setText("0");
+        ui->distortionLabel->setText("0");
+
+
+
         const char* name = nameFile.c_str();
         //QImage
         QImage image, imageGray, imageBinary, imageEdge, imageFinal;
@@ -230,9 +239,14 @@ void MainWindow::on_pushButton_clicked()
             ui->lblFinal->setPixmap(QPixmap::fromImage(imageFinal));
 
             key = cvWaitKey( 1000 / fps );
-            if ((count % step) == 0) {
-                calibrateFrames.push_back(matOriginal.clone());
-            }
+//            if (count < 25) {
+//                calibrateFrames.push_back(matOriginal.clone());
+//            }
+//            if (count == 25) {
+//                calibration(calibrateFrames);
+//                cout << K.size() << endl;
+//            }
+
             //release
             matOriginal.release();
             matProcess.release();
@@ -246,8 +260,6 @@ void MainWindow::on_pushButton_clicked()
 
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );
-
-        calibration(calibrateFrames);
 
 
     }
@@ -289,9 +301,11 @@ bool MainWindow::verifyParameters()
 void MainWindow::on_openVideoBtn_clicked()
 {
     reset();
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Abrir video"), "",
-                                                    tr("video (*.avi)"));
+    QString fileName = QFileDialog::getOpenFileName(
+                this,
+                tr("Abrir video"), "",
+                tr("video (*.avi)")
+    );
     if (fileName.isEmpty())
         return;
     else {
