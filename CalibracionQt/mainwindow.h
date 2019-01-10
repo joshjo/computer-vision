@@ -43,6 +43,7 @@ private:
     int rows = 0;
     int wResize = 420;
     int hResize = 236;
+    double circleSpacing = 0.0;
 
     vector <Mat> calibrateFrames;
 };

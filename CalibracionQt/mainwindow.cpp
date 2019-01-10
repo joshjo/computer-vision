@@ -52,7 +52,7 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
     return std::sqrt(totalErr/totalPoints);
 }
 void MainWindow::calibration(vector<Mat> & calibrateFrames) {
-    float radius = 0.0243;
+//    float radius = 5;
     Mat img, matGray, matThresh, matResult;
 
     vector< vector< Point3f > > object_points;
@@ -82,7 +82,7 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
         vector< Point3f > obj;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                obj.push_back(Point3f((float)j * radius, (float)i * radius, 0));
+                obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
             }
         }
 
@@ -99,8 +99,8 @@ void MainWindow::calibration(vector<Mat> & calibrateFrames) {
         Mat D;
         vector< Mat > rvecs, tvecs;
         int flag = 0;
-        flag |= CV_CALIB_FIX_K4;
-        flag |= CV_CALIB_FIX_K5;
+//        flag |= CV_CALIB_FIX_K4;
+//        flag |= CV_CALIB_FIX_K5;
         if (image_points.size() > 25) {
             image_points.erase(image_points.begin() + 25, image_points.end());
             object_points.erase(object_points.begin() + 25, object_points.end());
@@ -150,7 +150,7 @@ void MainWindow::on_pushButton_clicked()
 
         int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
 
-        int step = totalFrames / 35;
+        int step = totalFrames / 19;
 
         cout << "totalFrames: " << totalFrames << endl;
 
@@ -205,7 +205,7 @@ void MainWindow::on_pushButton_clicked()
             //imshow("josue", result.matSrc);
             //imshow("liz", result.matContours);
 
-            image = QImage(matOriginal.data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
+            image = QImage(matOriginal. data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
             image = image.scaled(ui->lblOriginal->width(), ui->lblOriginal->height(), Qt::KeepAspectRatio);
             ui->lblOriginal->setPixmap(QPixmap::fromImage(image));
 
@@ -258,23 +258,28 @@ bool MainWindow::verifyParameters()
 {
     if(nameFile.length() <= 0)
     {
-        QMessageBox::information(this, tr("No se puede abrir video."), "Error en el nombre del video.");
+        QMessageBox::information(this, tr("Can't open the video."), "Invalid name");
         return false;
     }
     else if(ui->txtFilas->text().length() <= 0)
     {
-        QMessageBox::information(this, tr("Notificación."), "Ingrese número de filas del patrón.");
+        QMessageBox::information(this, tr("Error."), "Invalid rows");
         return false;
     }
     else if(ui->txtColumnas->text().length() <= 0)
     {
-        QMessageBox::information(this, tr("Notificación."), "Ingrese número de columnas del patrón");
+        QMessageBox::information(this, tr("Error."), "Invalid columns");
+        return false;
+    }
+    else if(ui->circleSpacingTxt->text().length() <= 0) {
+        QMessageBox::information(this, tr("Error."), "Invalid circle spacing");
         return false;
     }
     else
     {
         rows = ui->txtFilas->text().toInt();
         cols = ui->txtColumnas->text().toInt();
+        circleSpacing = ui->circleSpacingTxt->text().toDouble();
         return true;
     }
 
