@@ -90,6 +90,7 @@ void MainWindow::calibration() {
 
         if(result.numValids == (rows * cols)){
             object_points.push_back(obj);
+            cout << cal.corners << endl;
             image_points.push_back(cal.corners);
         }
     }
@@ -156,7 +157,7 @@ void MainWindow::on_pushButton_clicked()
         Mat matOriginal,matProcess, matGray, matThresh;
         Data result;
         CvCapture* cap = cvCaptureFromAVI(name);
-
+        //CvCapture* cap = cvCaptureFromCAM(0);
         int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
 
         int step = totalFrames / 19;
@@ -171,6 +172,7 @@ void MainWindow::on_pushButton_clicked()
         //Reconocidos
         int countRecognized = 0;
         int count = 0;
+        int countCal = 0;
         //Time
         unsigned t0, t1;
         double time = 0, timeTotal = 0;
@@ -180,9 +182,9 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
 
-        //namedWindow("josue", WINDOW_AUTOSIZE);
+        namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
-        while( key != 'x' )
+        while( key != 'x'  )//&& count < 1500)
         {
             frame = cvQueryFrame( cap );
             if( !frame ) break;
@@ -196,7 +198,7 @@ void MainWindow::on_pushButton_clicked()
             objCal->thresholdMat(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
-
+            imshow("josue", result.matContours);
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             count++;
 
@@ -204,6 +206,9 @@ void MainWindow::on_pushButton_clicked()
             if(result.numValids > 0){
                 timeTotal += time;
                 countRecognized++;
+                if (countCal < 25 && countRecognized % 15 == 0) {
+                    calibrateFrames.push_back(matOriginal.clone());
+                }
             }
 
             ui->lblTime->setText(QString::number(time));
@@ -247,7 +252,9 @@ void MainWindow::on_pushButton_clicked()
 //                cout << K.size() << endl;
 //            }
 
+
             //release
+
             matOriginal.release();
             matProcess.release();
             matGray.release();
@@ -257,6 +264,7 @@ void MainWindow::on_pushButton_clicked()
 
 
         }
+        calibration();
 
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );
@@ -304,7 +312,7 @@ void MainWindow::on_openVideoBtn_clicked()
     QString fileName = QFileDialog::getOpenFileName(
                 this,
                 tr("Abrir video"), "",
-                tr("video (*.avi)")
+                tr("video (*.avi *.mp4)")
     );
     if (fileName.isEmpty())
         return;

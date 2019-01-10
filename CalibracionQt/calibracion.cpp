@@ -14,7 +14,12 @@ void Calibracion::grayScale(Mat &greyColor, Mat src)
 void Calibracion::thresholdMat(Mat &thresh, Mat src)
 {
     GaussianBlur(src, thresh,Size(9,9), 2, 2);
-    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
+    //adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
+    adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY,11,3);
+    Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5), Point(2,2));
+    erode(thresh, thresh, element);
+    dilate(thresh, thresh, element);
+
 }
 
 void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, int cols)
