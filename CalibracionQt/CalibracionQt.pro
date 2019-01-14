@@ -33,7 +33,8 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     calibracion.cpp \
-    data.cpp
+    data.cpp \
+    patternring.cpp
 
 #OPEN MP
 QMAKE_CXXFLAGS += -fopenmp
@@ -43,7 +44,8 @@ HEADERS += \
         mainwindow.h \
     calibracion.h \
     processCircles.hpp \
-    data.h
+    data.h \
+    patternring.h
 
 FORMS += \
         mainwindow.ui
