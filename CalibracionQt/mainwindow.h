@@ -37,6 +37,7 @@ private slots:
 
     void reset();
 
+
 private:
     Ui::MainWindow *ui;
 
@@ -52,6 +53,7 @@ private:
     int framesCalibration;
 
     vector <vector<Point2f>> calibrateFramesVectors;
+    vector <Mat> calibrateFrames;
 
     Mat K;
     Mat D;

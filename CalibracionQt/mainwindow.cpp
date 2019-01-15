@@ -98,6 +98,7 @@ void MainWindow::calibration(Size size) {
         ui->cxLabel->setText( QString::number(K.at<double>(0, 2)) );
         ui->cyLabel->setText( QString::number(K.at<double>(1, 2)) );
         ui->distortionLabel->setText( qstr );
+
     }
     ui->lblRMS->setText(QString::number( rms ));
     cout << avrTotal << endl;
@@ -122,6 +123,12 @@ void MainWindow::on_pushButton_clicked()
         ui->distortionLabel->setText("0");
 
 
+        int countRecognized = 0;
+        int count = 0;
+        int countCal = 0;
+        //Time
+        unsigned t0, t1;
+        double time = 0, timeTotal = 0;
 
         const char* name = nameFile.c_str();
         //QImage
@@ -129,11 +136,9 @@ void MainWindow::on_pushButton_clicked()
         //Mats
         Mat matOriginal,matProcess, matGray, matThresh;
         Data result;
-        CvCapture* cap = cvCaptureFromAVI(name);
-        //CvCapture* cap = cvCaptureFromCAM(0);
+        //CvCapture* cap = cvCaptureFromAVI(name);
+        CvCapture* cap = cvCaptureFromCAM(0);
         int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
-
-        int step = totalFrames / 19;
 
         cout << "totalFrames: " << totalFrames << endl;
 
@@ -142,23 +147,18 @@ void MainWindow::on_pushButton_clicked()
         int key = 0;
         int fps = ( int )cvGetCaptureProperty( cap, CV_CAP_PROP_FPS );
 
-        //Reconocidos
-        int countRecognized = 0;
-        int count = 0;
-        int countCal = 0;
-        //Time
-        unsigned t0, t1;
-        double time = 0, timeTotal = 0;
         if ( !cap )
         {
             fprintf( stderr, "Cannot open AVI!\n" );
             return;
         }
         Size size(cvarrToMat(frame).size());
-        namedWindow("josue", WINDOW_AUTOSIZE);
+        //namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
-        while( key != 'x'  )//&& count < 1500)
+        int c = 0;
+        while( key != 'x' && c < 3500  )//&& count < 1500)
         {
+            c++;
             frame = cvQueryFrame( cap );
             if( !frame ) break;
             matOriginal = cv::cvarrToMat(frame);
@@ -171,7 +171,6 @@ void MainWindow::on_pushButton_clicked()
             objCal->thresholdMat(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
-            imshow("josue", result.matSrc);
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             count++;
 
@@ -181,6 +180,7 @@ void MainWindow::on_pushButton_clicked()
                 countRecognized++;
                 if (countCal < 25 ) {
                     calibrateFramesVectors.push_back(result.centers);
+                    calibrateFrames.push_back(matOriginal);
                     countCal++;
                 }
             }
@@ -225,8 +225,6 @@ void MainWindow::on_pushButton_clicked()
             matProcess.release();
             matGray.release();
             matThresh.release();
-
-
 
 
         }
@@ -328,3 +326,6 @@ void MainWindow::reset()
     ui->lblFinal->clear();
 
 }
+
+
+
