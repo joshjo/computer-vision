@@ -91,26 +91,134 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
 
 void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
 {
-
-
-    RotatedRect box = minAreaRect( Mat(centers));
+    /*RotatedRect box = minAreaRect( Mat(centers));
     Point2f corners[4];
-    box.points( corners );
-   /* cout << endl << "rot ";
-    for(int i=0; i < 4 ; i++)
-        cout << corners[i] << " - ";
-    cout << endl;*/
-    //order
-     Point2f tempSorted[4];
-     tempSorted[0] = corners[1];
-     tempSorted[1] = corners[2];
-     tempSorted[2] = corners[0];
-      tempSorted[3] = corners[3];
+    box.points( corners );*/
+    vector<Point2f> corners;
+    vector<Point2f> tempSorted;
 
+
+    convexHull(Mat(centers), corners, true);
+    corners.push_back(corners[0]);
+    corners.push_back(corners[1]);
+
+    float x_s = corners[0].x;
+    float y_s = corners[0].y;
+    float m = (corners[1].y - y_s)/(corners[1].x - x_s + 0.0001);
     float holgura = 5;
     float y_eq = 0;
     float x_eq = 0;
 
+    for(uint i=1; i<corners.size(); i++)
+    {
+        cout << corners[i] << " - " ;
+        if(abs(corners[i].x - x_s) > abs(corners[i].y - y_s))
+        {
+            y_eq = m*(corners[i].x - x_s) + y_s;
+
+            if(abs(y_eq - corners[i].y) >= holgura)
+            {
+                tempSorted.push_back(corners[i-1]);
+                x_s = corners[i-1].x;
+                y_s = corners[i-1].y;
+                m = (corners[i].y - y_s)/(corners[i].x - x_s + 0.0001);
+            }
+
+        }
+        else
+        {
+            x_eq = (corners[i].y - y_s)/m + x_s;
+
+            if(abs(x_eq - corners[i].x) >= holgura)
+            {
+                tempSorted.push_back(corners[i-1]);
+                x_s = corners[i-1].x;
+                y_s = corners[i-1].y;
+                m = (corners[i].y - y_s)/(corners[i].x - x_s + 0.0001);
+            }
+
+        }
+
+        cout << corners[i] << endl ;
+
+    }
+    //cout<<sorted_ellipses.size()<<endl;
+    x_s = tempSorted[0].x;
+    y_s = tempSorted[0].y;
+    m = (tempSorted[1].y - y_s)/(tempSorted[1].x - x_s + 0.0001);
+
+    int count_dist1 = 0;
+    int count_dist2 = 0;
+
+    for(uint i=0; i<centers.size(); i++)
+    {
+        if(abs(centers[i].x - x_s) > abs(centers[i].y - y_s))
+        {
+            y_eq = m*(centers[i].x - x_s) + y_s;
+
+            if(abs(y_eq - centers[i].y) >= holgura)
+            {
+                count_dist1++;
+            }
+
+        }
+        else
+        {
+            x_eq = (centers[i].y - y_s)/m + x_s;
+
+            if(abs(x_eq - centers[i].x) >= holgura)
+            {
+                count_dist1++;
+            }
+
+        }
+    }
+
+    x_s = tempSorted[1].x;
+    y_s = tempSorted[1].y;
+    m = (tempSorted[2].y - y_s)/(tempSorted[2].x - x_s + 0.0001);
+
+    for(uint i=0; i<centers.size(); i++)
+    {
+        if(abs(centers[i].x - x_s) > abs(centers[i].y - y_s))
+        {
+            y_eq = m*(centers[i].x - x_s) + y_s;
+
+            if(abs(y_eq - centers[i].y) >= holgura)
+            {
+                count_dist2++;
+            }
+
+        }
+        else
+        {
+            x_eq = (centers[i].y - y_s)/m + x_s;
+
+            if(abs(x_eq - centers[i].x) >= holgura)
+            {
+                count_dist2++;
+            }
+
+        }
+    }
+
+
+    if(count_dist1 < count_dist2)
+    {
+        Point p = tempSorted[2];
+        tempSorted[2] = tempSorted[3];
+        tempSorted[3] = p;
+    }
+    else
+    {
+        vector<Point2f> temp;
+        temp.push_back(tempSorted[3]);
+        temp.push_back(tempSorted[0]);
+        temp.push_back(tempSorted[2]);
+        temp.push_back(tempSorted[1]);
+        tempSorted = temp;
+
+    }
 
     //Get middle points
     vector<Point2f> middlePoints;
