@@ -5,6 +5,7 @@
 class PatternRing
 {
 public:
+    PatternRing();
     PatternRing(int idParent, double xcenter, double ycenter);
     int idParent;
     double xcenter;

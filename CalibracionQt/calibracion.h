@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <processCircles.hpp>
 #include "data.h"
+#include "patternring.h"
 
 
 class Calibracion
@@ -17,11 +18,13 @@ class Calibracion
 public:
     Calibracion();
 
+    const double PI =3.141592653589793238463;
     void grayScale(Mat &gray, Mat src);
     void thresholdMat(Mat &thresh, Mat src);
     void calculateCenters(Data &result, Mat src, int rows, int cols);
-    const double PI =3.141592653589793238463;
-    vector<Point2f> corners;
+    void orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers);
+    vector<Point2f> pointsMiddle(Point2f p1, Point2f p2, vector<Point2f> centers);
+    vector<Point2f> orderPointsMiddle(Point2f p, vector<Point2f> middlePoints);
 
 };
 

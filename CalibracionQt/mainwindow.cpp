@@ -54,62 +54,21 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 
 
 void MainWindow::calibration() {
-//    float radius = 5;
-    Mat img, matGray, matThresh, matResult;
 
-    vector< vector< Point3f > > object_points;
-    vector< vector< Point2f > > image_points;
-    int number;
-
-    char img_file[100];
+    ui->calibrationFramesLabel->setText(QString::number(calibrateFramesVectors.size()));
 
     double rms = 0;
     double avrTotal = 0;
-    vector<float> reprojErrs;
-    for(int i = 0; i < calibrateFrames.size(); i++) {
-        img = calibrateFrames[i];
-
-        Calibracion cal;
-
-        Data result;
-        result.matSrc = img.clone();
-        result.matContours = img.clone();
-
-        cal.grayScale(matGray, img);
-        cal.thresholdMat(matThresh, matGray);
-        matResult = matThresh.clone();
-
-        cal.calculateCenters(result, matThresh.clone(), rows, cols);
-
-        vector< Point3f > obj;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-            }
-        }
-
-        if(result.numValids == (rows * cols)){
-            object_points.push_back(obj);
-            cout << cal.corners << endl;
-            image_points.push_back(cal.corners);
-        }
-    }
-
-    ui->calibrationFramesLabel->setText(QString::number(image_points.size()));
-
-    if (image_points.size() > 10 && (object_points.size() == image_points.size())) {
+    if (calibrateFramesVectors.size() == 25) {
         vector< Mat > rvecs, tvecs;
         int flag = 0;
 //        flag |= CV_CALIB_FIX_K4;
 //        flag |= CV_CALIB_FIX_K5;
-        if (image_points.size() > 25) {
-            image_points.erase(image_points.begin() + 25, image_points.end());
-            object_points.erase(object_points.begin() + 25, object_points.end());
-        }
+
         //the final re-projection error.
-        rms = calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
-        avrTotal =  computeReprojectionErrors( object_points, image_points, rvecs, tvecs,
-                                  K , D,reprojErrs);
+       // rms = calibrateCamera(, calibrateFramesVectors, img.size(), K, D, rvecs, tvecs, flag);
+       // avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs,
+       //                           K , D,reprojErrs);
         QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
@@ -198,16 +157,17 @@ void MainWindow::on_pushButton_clicked()
             objCal->thresholdMat(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
-            imshow("josue", result.matContours);
+            imshow("josue", result.matSrc);
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             count++;
 
 
-            if(result.numValids > 0){
+            if(result.numValids == cols*rows){
                 timeTotal += time;
                 countRecognized++;
-                if (countCal < 25 && countRecognized % 15 == 0) {
-                    calibrateFrames.push_back(matOriginal.clone());
+                if (countCal < 25 ) {
+                    calibrateFramesVectors.push_back(result.centers);
+                    countCal++;
                 }
             }
 
@@ -244,14 +204,6 @@ void MainWindow::on_pushButton_clicked()
             ui->lblFinal->setPixmap(QPixmap::fromImage(imageFinal));
 
             key = cvWaitKey( 1000 / fps );
-//            if (count < 25) {
-//                calibrateFrames.push_back(matOriginal.clone());
-//            }
-//            if (count == 25) {
-//                calibration(calibrateFrames);
-//                cout << K.size() << endl;
-//            }
-
 
             //release
 
