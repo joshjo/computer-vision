@@ -51,7 +51,7 @@ private:
     int modeCalibrating;
     int framesCalibration;
 
-    vector <Mat> calibrateFrames;
+    vector <vector<Point2f>> calibrateFramesVectors;
 
     Mat K;
     Mat D;
