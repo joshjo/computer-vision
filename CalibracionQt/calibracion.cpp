@@ -72,17 +72,17 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     vector<Point2f> ringsSorted = points;
 
     cout << "centers " << points.size() << endl;
-    if( points.size() == 20)
+    if( points.size() == rows*cols)
     {
         orderPoints(rows, cols, ringsSorted, points);
+
         resultData.centers = ringsSorted;
         Scalar color(23,190,187);
-        for (size_t i = 0; i < ringsSorted.size() - 1; ++i){
-
-            circle(resultData.matContours, ringsSorted[i], 2, color, -1, 8, 0); //-1 full circle
-            Point p2(cvRound( ringsSorted[i+1].x), cvRound( ringsSorted[i+1].y));
-            line(resultData.matSrc,  ringsSorted[i], p2, color, 2);
-            putText(resultData.matSrc, to_string(i),  ringsSorted[i], FONT_HERSHEY_TRIPLEX, 1, color);
+        for (size_t i = 0; i < ringsSorted.size(); ++i){
+            circle(resultData.matSrc, ringsSorted[i], 2, color, -1, 8, 0);
+            putText(resultData.matSrc,to_string(i+1), ringsSorted[i], FONT_HERSHEY_DUPLEX, 1 , color,  1); // Line Thickness (Optional)
+            if( i > 0)
+                line(resultData.matSrc,  Point( ringsSorted[i-1].x, ringsSorted[i-1].y),  ringsSorted[i], color, 2);
 
         }
     }
@@ -136,7 +136,7 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
 
         }
 
-
+        cout << corners[i] << endl ;
 
     }
     //cout<<sorted_ellipses.size()<<endl;
