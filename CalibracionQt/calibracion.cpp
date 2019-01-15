@@ -38,7 +38,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     // Canny(srcThresh, srcThresh, 50, 150, 3);
     //findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
     findContours( srcThresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
-    cout << contours.size() << "size" << endl;
+   // cout << contours.size() << "size" << endl;
     double indexCircularity = 0;
     vector<PatternRing> rings;
     vector<Point2f> points;
@@ -71,7 +71,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     //vector<Point> pointsSorted;
     vector<Point2f> ringsSorted = points;
 
-    cout << "centers " << points.size() << endl;
+   // cout << "centers " << points.size() << endl;
     if( points.size() == rows*cols)
     {
         orderPoints(rows, cols, ringsSorted, points);
@@ -80,7 +80,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
         Scalar color(23,190,187);
         for (size_t i = 0; i < ringsSorted.size(); ++i){
             circle(resultData.matSrc, ringsSorted[i], 2, color, -1, 8, 0);
-            putText(resultData.matSrc,to_string(i+1), ringsSorted[i], FONT_HERSHEY_DUPLEX, 1 , color,  1); // Line Thickness (Optional)
+            putText(resultData.matSrc,to_string(i+1), ringsSorted[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
             if( i > 0)
                 line(resultData.matSrc,  Point( ringsSorted[i-1].x, ringsSorted[i-1].y),  ringsSorted[i], color, 2);
 
@@ -104,14 +104,15 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
 
     float x_s = corners[0].x;
     float y_s = corners[0].y;
-    float m = (corners[1].y - y_s)/(corners[1].x - x_s + 0.0001);
+    float x_holgura = 0.000001;
+    float m = (corners[1].y - y_s)/(corners[1].x - x_s + x_holgura);
     float holgura = 5;
     float y_eq = 0;
     float x_eq = 0;
 
     for(uint i=1; i<corners.size(); i++)
     {
-        cout << corners[i] << " - " ;
+      //  cout << corners[i] << " - " ;
         if(abs(corners[i].x - x_s) > abs(corners[i].y - y_s))
         {
             y_eq = m*(corners[i].x - x_s) + y_s;
@@ -121,7 +122,7 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
                 tempSorted.push_back(corners[i-1]);
                 x_s = corners[i-1].x;
                 y_s = corners[i-1].y;
-                m = (corners[i].y - y_s)/(corners[i].x - x_s + 0.0001);
+                m = (corners[i].y - y_s)/(corners[i].x - x_s + x_holgura);
             }
 
         }
@@ -134,18 +135,18 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
                 tempSorted.push_back(corners[i-1]);
                 x_s = corners[i-1].x;
                 y_s = corners[i-1].y;
-                m = (corners[i].y - y_s)/(corners[i].x - x_s + 0.0001);
+                m = (corners[i].y - y_s)/(corners[i].x - x_s + x_holgura);
             }
 
         }
 
-        cout << corners[i] << endl ;
+       // cout << corners[i] << endl ;
 
     }
     //cout<<sorted_ellipses.size()<<endl;
     x_s = tempSorted[0].x;
     y_s = tempSorted[0].y;
-    m = (tempSorted[1].y - y_s)/(tempSorted[1].x - x_s + 0.0001);
+    m = (tempSorted[1].y - y_s)/(tempSorted[1].x - x_s + x_holgura);
 
     int count_dist1 = 0;
     int count_dist2 = 0;
@@ -176,7 +177,7 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
 
     x_s = tempSorted[1].x;
     y_s = tempSorted[1].y;
-    m = (tempSorted[2].y - y_s)/(tempSorted[2].x - x_s + 0.0001);
+    m = (tempSorted[2].y - y_s)/(tempSorted[2].x - x_s + x_holgura);
 
     for(uint i=0; i<centers.size(); i++)
     {

@@ -53,10 +53,11 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 }
 
 
-void MainWindow::calibration() {
+void MainWindow::calibration(Size size) {
 
     ui->calibrationFramesLabel->setText(QString::number(calibrateFramesVectors.size()));
 
+    vector< vector< Point3f > > object_points;
     double rms = 0;
     double avrTotal = 0;
     if (calibrateFramesVectors.size() == 25) {
@@ -65,10 +66,23 @@ void MainWindow::calibration() {
 //        flag |= CV_CALIB_FIX_K4;
 //        flag |= CV_CALIB_FIX_K5;
 
+            vector<float> reprojErrs;
+            for(int i = 0; i < calibrateFramesVectors.size(); i++) {
+
+                vector< Point3f > obj;
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                    }
+                }
+
+
+                    object_points.push_back(obj);
+
+        }
         //the final re-projection error.
-       // rms = calibrateCamera(, calibrateFramesVectors, img.size(), K, D, rvecs, tvecs, flag);
-       // avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs,
-       //                           K , D,reprojErrs);
+        rms = calibrateCamera(object_points, calibrateFramesVectors, size, K, D, rvecs, tvecs, flag);
+        avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs,K , D,reprojErrs);
         QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
@@ -140,7 +154,7 @@ void MainWindow::on_pushButton_clicked()
             fprintf( stderr, "Cannot open AVI!\n" );
             return;
         }
-
+        Size size(cvarrToMat(frame).size());
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         while( key != 'x'  )//&& count < 1500)
@@ -216,7 +230,7 @@ void MainWindow::on_pushButton_clicked()
 
 
         }
-        calibration();
+        calibration(size);
 
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );

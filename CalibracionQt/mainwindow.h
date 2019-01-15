@@ -33,7 +33,7 @@ private slots:
 
     void on_calibrateBtn_clicked();
 
-    void calibration();
+    void calibration(Size size);
 
     void reset();
 
