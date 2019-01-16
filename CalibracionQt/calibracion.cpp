@@ -48,7 +48,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
         if(contours[idx].size() > 4 && !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
         {
 
-            indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
+            indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true), 2);
 
             if( indexCircularity > 0.65 && contours[hierarchy[idx][2]].size() > 4)
             {

@@ -280,7 +280,6 @@ struct PatternMatrix {
         number dx = w / cols;
         number dy = h / rows;
 
-//        for(auto& it: circles) {
         for (int e = 0; e < circles.size(); e++) {
             Circle * c = circles[e];
             int i = (int) ((c->rx - x1) / dx);

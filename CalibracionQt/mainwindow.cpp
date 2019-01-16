@@ -53,36 +53,106 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 }
 
 
-void MainWindow::calibration(Size size) {
+void MainWindow::frontoParallel(Mat & K, Mat & D) {
+
+    Point2f source [4];
+    Point2f dest [4];
+    Mat output, matGray, matThresh, matUndst, matPerspective;
+    Data result;
+    Mat Ki = K.clone();
+    Mat Di = D.clone();
+    double rms;
+
+    vector <vector<Point2f> > imgPoints;
+    vector <vector<Point3f> > objPoints;
+
+    for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+        source[0] = calibrateFramesVectors[j][0];
+        source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
+        source[2] = Point2f(calibrateFramesVectors[j][0].x, calibrateFramesVectors[j][19].y);
+        source[3] = calibrateFramesVectors[j][19];
+
+        // Update this to rows
+        dest[0] = calibrateFramesVectors[j][0];
+        dest[1] = calibrateFramesVectors[j][4];
+        dest[2] = calibrateFramesVectors[j][15];
+        dest[3] = calibrateFramesVectors[j][19];
+
+        Mat matOriginal = calibrateImages[j].clone();
+
+        undistort(matOriginal, matUndst, K, D);
+        Mat lambda = getPerspectiveTransform(dest, source);
+        warpPerspective(matUndst, matPerspective, lambda, output.size());
+        Calibracion * cal = new Calibracion();
+
+        result.matSrc = matPerspective.clone();
+        result.matContours = matPerspective.clone();
+
+
+        cal->grayScale(matGray, matPerspective);
+        cal->thresholdMat(matThresh, matGray);
+        cal->calculateCenters(result, matThresh.clone(), rows, cols);
+
+        if(result.numValids == cols*rows){
+            vector< Point3f > obj;
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                }
+            }
+            objPoints.push_back(obj);
+            imgPoints.push_back(result.centers);
+        }
+    }
+
+//    rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+
+    cout << "imgPoints size: " << imgPoints.size() << endl;
+    cout << "objPoints size: " << objPoints.size() << endl;
+}
+
+
+void MainWindow::calibration() {
 
     ui->calibrationFramesLabel->setText(QString::number(calibrateFramesVectors.size()));
 
     vector< vector< Point3f > > object_points;
+    vector <vector <Point2f> > image_points;
     double rms = 0;
     double avrTotal = 0;
     if (calibrateFramesVectors.size() == 25) {
+
         vector< Mat > rvecs, tvecs;
         int flag = 0;
-//        flag |= CV_CALIB_FIX_K4;
-//        flag |= CV_CALIB_FIX_K5;
 
-            vector<float> reprojErrs;
-            for(int i = 0; i < calibrateFramesVectors.size(); i++) {
+        vector<float> reprojErrs;
 
-                vector< Point3f > obj;
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-                    }
+        for(int k = 0; k < calibrateFramesVectors.size(); k++) {
+
+            vector< Point3f > obj;
+            vector< Point2f > img;
+            for (int i = 0; i < rows; i++) {
+                vector< Point2f > rowImg;
+                for (int j = 0; j < cols; j++) {
+                    obj.push_back(Point3f((float)j * circleSpacing, (float)(rows - i - 1) * circleSpacing, 0));
+                    rowImg.push_back(calibrateFramesVectors[k][(cols * i) + j]);
                 }
+                sort(rowImg.begin(), rowImg.end(),
+                     [](const Point2f &a, const Point2f &b)
+                       {
+                           return a.x < b.x;
+                       }
+                );
+                img.insert(img.begin(), rowImg.begin(), rowImg.end());
+            }
 
-
-                    object_points.push_back(obj);
-
+            image_points.push_back(img);
+            object_points.push_back(obj);
         }
-        //the final re-projection error.
-        rms = calibrateCamera(object_points, calibrateFramesVectors, size, K, D, rvecs, tvecs, flag);
-        avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs,K , D,reprojErrs);
+
+
+        rms = calibrateCamera(object_points, image_points, size, K, D, rvecs, tvecs, flag);
+        avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs, K , D,reprojErrs);
         QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
@@ -127,7 +197,7 @@ void MainWindow::on_pushButton_clicked()
         //QImage
         QImage image, imageGray, imageBinary, imageEdge, imageFinal;
         //Mats
-        Mat matOriginal,matProcess, matGray, matThresh;
+        Mat matOriginal,matProcess, matGray, matThresh, matUndst;
         Data result;
         CvCapture* cap = cvCaptureFromAVI(name);
         //CvCapture* cap = cvCaptureFromCAM(0);
@@ -155,8 +225,8 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
         Size size(cvarrToMat(frame).size());
-        namedWindow("josue", WINDOW_AUTOSIZE);
-        //namedWindow("liz", WINDOW_AUTOSIZE);
+        this->size = size;
+        namedWindow("undistort", WINDOW_AUTOSIZE);
         while( key != 'x'  )//&& count < 1500)
         {
             frame = cvQueryFrame( cap );
@@ -171,7 +241,6 @@ void MainWindow::on_pushButton_clicked()
             objCal->thresholdMat(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
-            imshow("josue", result.matSrc);
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             count++;
 
@@ -181,7 +250,16 @@ void MainWindow::on_pushButton_clicked()
                 countRecognized++;
                 if (countCal < 25 ) {
                     calibrateFramesVectors.push_back(result.centers);
+                    calibrateImages.push_back(matOriginal);
                     countCal++;
+                }
+                if (countCal == 25) {
+                    calibration();
+                    countCal++;
+                }
+                if (countCal > 25) {
+                    undistort(matOriginal, matUndst, K, D);
+                    imshow("undistort", matUndst);
                 }
             }
 
@@ -230,7 +308,6 @@ void MainWindow::on_pushButton_clicked()
 
 
         }
-        calibration(size);
 
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );
