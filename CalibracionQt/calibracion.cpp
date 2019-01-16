@@ -74,13 +74,13 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
    // cout << "centers " << points.size() << endl;
     if( points.size() == rows*cols)
     {
-        orderPoints(rows, cols, ringsSorted, points);
+        orderPoints(resultData.matSrc, rows, cols, ringsSorted, points);
 
         resultData.centers = ringsSorted;
         Scalar color(23,190,187);
         for (size_t i = 0; i < ringsSorted.size(); ++i){
             circle(resultData.matSrc, ringsSorted[i], 2, color, -1, 8, 0);
-            putText(resultData.matSrc,to_string(i+1), ringsSorted[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
+            //putText(resultData.matSrc,to_string(i+1), ringsSorted[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
             if( i > 0)
                 line(resultData.matSrc,  Point( ringsSorted[i-1].x, ringsSorted[i-1].y),  ringsSorted[i], color, 2);
 
@@ -89,11 +89,19 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     resultData.numValids = points.size();
 }
 
-void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
+void Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
 {
-    /*RotatedRect box = minAreaRect( Mat(centers));
-    Point2f corners[4];
-    box.points( corners );*/
+   /* RotatedRect box = minAreaRect( Mat(centers));
+    Point2f tempSorted[4];
+    box.points( tempSorted );
+    Scalar color(255,0,0);
+
+    for(int i = 0; i < 4 ; i++)
+    {
+        cout << tempSorted[i] << "-" ;
+    }
+
+    cout << endl*/
     vector<Point2f> corners;
     vector<Point2f> tempSorted;
 
@@ -101,12 +109,11 @@ void Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, 
     convexHull(Mat(centers), corners, true);
     corners.push_back(corners[0]);
     corners.push_back(corners[1]);
-
-    float x_s = corners[0].x;
+   float x_s = corners[0].x;
     float y_s = corners[0].y;
     float x_holgura = 0.000001;
     float m = (corners[1].y - y_s)/(corners[1].x - x_s + x_holgura);
-    float holgura = 5;
+    float holgura = 10;
     float y_eq = 0;
     float x_eq = 0;
 
@@ -372,17 +379,22 @@ vector<Point2f> Calibracion::orderPointsMiddle(Point2f p, vector<Point2f> middle
 
 }
 
-vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f> centers)
+vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f> &centers)
 {
+    //cout << "size: " << centers.size() << endl;
     vector<Point2f> pointsMiddle;
     float m = (p2.y - p1.y)/(p2.x - p1.x + 0.0001);
     float y_eq, x_eq;
     int holgura = 5;
+    vector<int> tempDelete;
+    for(int i = 0 ; i < centers.size(); i++)
+    {
+        tempDelete.push_back(0);
+    }
 
     for(uint i=0; i<centers.size(); i++)
     {
-        if( !(
-                    (abs(centers[i].x-p1.x)<1 && abs(centers[i].y - p1.y)<1)
+        if( !( (abs(centers[i].x-p1.x)<1 && abs(centers[i].y - p1.y)<1)
                     || (abs(centers[i].x - p2.x)<1 && abs(centers[i].y - p2.y)<1)
                     ))
         {
@@ -393,6 +405,7 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
                 if(abs(y_eq - centers[i].y) <= holgura)
                 {
                     pointsMiddle.push_back(centers[i]);
+                    tempDelete.at(i) = -10000;
                 }
 
             }
@@ -403,10 +416,23 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
                 if(abs(x_eq - centers[i].x) <= holgura)
                 {
                     pointsMiddle.push_back(centers[i]);
+                    tempDelete.at(i) = -10000;
                 }
 
             }
         }
     }
+    vector<Point2f> result;
+
+    for(int i = 0 ; i < centers.size(); i++)
+    {
+        if(tempDelete.at(i) == 0){
+            result.push_back(centers.at(i) );
+
+        }
+    }
+    centers = result;
+
+   // cout << "size: " << centers.size() << endl;
     return pointsMiddle;
 }

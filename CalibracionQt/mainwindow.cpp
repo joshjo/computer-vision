@@ -136,8 +136,11 @@ void MainWindow::on_pushButton_clicked()
         //Mats
         Mat matOriginal,matProcess, matGray, matThresh;
         Data result;
-        //CvCapture* cap = cvCaptureFromAVI(name);
-        CvCapture* cap = cvCaptureFromCAM(0);
+        CvCapture* cap;
+        if(ui->rdnCamera->isChecked())
+            cap = cvCaptureFromCAM(0);
+        else
+            cap = cvCaptureFromAVI(name);
         int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
 
         cout << "totalFrames: " << totalFrames << endl;
@@ -153,7 +156,7 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
         Size size(cvarrToMat(frame).size());
-        //namedWindow("josue", WINDOW_AUTOSIZE);
+        namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
         while( key != 'x' && c < 3500  )//&& count < 1500)
@@ -190,7 +193,7 @@ void MainWindow::on_pushButton_clicked()
             ui->lblNumTotal->setText(QString::number(count));
             ui->lblReconodicos->setText(QString::number(countRecognized));
 
-            //imshow("josue", result.matSrc);
+            imshow("josue", result.matSrc);
             //imshow("liz", result.matContours);
 
             image = QImage(matOriginal. data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
@@ -242,20 +245,36 @@ bool MainWindow::verifyParameters()
 {
     if(nameFile.length() <= 0)
     {
-        QMessageBox::information(this, tr("Can't open the video."), "Invalid name");
-        return false;
+        if(!ui->rdnCamera->isChecked())
+        {
+            QMessageBox::information(this, tr("Can't open the video."), "Invalid name");
+            return false;
+        }else{
+            int maxTested = 10;
+            for (int i = 0; i < maxTested; i++){
+                VideoCapture tmpcamera(i);
+                bool res = (!tmpcamera.isOpened());
+                tmpcamera.release();
+                if (res)
+                {
+                    QMessageBox::warning(this, tr("Error."), "No camera detected.");
+                    ui->rdnCamera->setChecked(false);
+                    return false;
+                }
+              }
+        }
     }
-    else if(ui->txtFilas->text().length() <= 0)
+    if(ui->txtFilas->text().length() <= 0)
     {
         QMessageBox::information(this, tr("Error."), "Invalid rows");
         return false;
     }
-    else if(ui->txtColumnas->text().length() <= 0)
+    if(ui->txtColumnas->text().length() <= 0)
     {
         QMessageBox::information(this, tr("Error."), "Invalid columns");
         return false;
     }
-    else if(ui->circleSpacingTxt->text().length() <= 0) {
+    if(ui->circleSpacingTxt->text().length() <= 0) {
         QMessageBox::information(this, tr("Error."), "Invalid circle spacing");
         return false;
     }
@@ -326,6 +345,5 @@ void MainWindow::reset()
     ui->lblFinal->clear();
 
 }
-
 
 

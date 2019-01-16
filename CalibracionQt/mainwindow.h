@@ -37,7 +37,6 @@ private slots:
 
     void reset();
 
-
 private:
     Ui::MainWindow *ui;
 
