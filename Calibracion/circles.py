@@ -8,70 +8,25 @@ import matplotlib as mpl
 
 from itertools import cycle
 
+
+
 circles = [
-    [343.262, 367.539, 8],
-    [343.181, 367.706, 16],
-    [295.516, 357.516, 8],
-    [295.487, 357.538, 16],
-    [248.286, 347.307, 8],
-    [248.215, 347.246, 16],
-    [202.037, 336.895, 7],
-    [491.936, 330.887, 5],
-    [201.998, 336.861, 16],
-    [157.261, 326.337, 7],
-    [353.526, 319.629, 8],
-    [157.321, 326.442, 15],
-    [353.461, 319.71, 16],
-    [305.808, 309.663, 8],
-    [305.742, 309.829, 16],
-    [258.701, 299.8, 8],
-    [258.656, 299.849, 16],
-    [212.368, 289.997, 7],
-    [212.374, 290.051, 16],
-    [167.489, 280.242, 7],
-    [363.13, 271.776, 8],
-    [167.396, 280.299, 15],
-    [363.049, 271.922, 16],
-    [315.756, 262.303, 8],
-    [315.72, 262.237, 16],
-    [268.945, 252.775, 8],
-    [268.865, 252.794, 16],
-    [222.955, 243.449, 8],
-    [222.754, 243.579, 16],
-    [177.986, 234.467, 7],
-    [178.046, 234.567, 16],
-    [372.359, 225.089, 7],
-    [372.458, 225.098, 16],
-    [325.288, 215.76, 7],
-    [325.386, 215.656, 16],
-    [279.086, 206.645, 7],
-    [278.915, 206.711, 16],
-    [233.282, 198.11, 7],
-    [188.727, 189.879, 7],
-    [233.337, 197.971, 16],
-    [188.904, 189.72, 16],
-    [381.024, 179.251, 7],
-    [380.964, 179.215, 16],
-    [334.648, 170.321, 7],
-    [334.629, 170.235, 16],
-    [288.749, 161.739, 7],
-    [243.775, 153.949, 7],
-    [288.786, 161.846, 16],
-    [199.425, 146.372, 6],
-    [243.718, 153.944, 16],
-    [199.825, 146.332, 16],
-    [388.713, 135.081, 7],
-    [388.953, 135.136, 16],
-    [343.408, 126.394, 7],
-    [298.155, 118.473, 6],
-    [343.239, 126.496, 16],
-    [490.551, 114.973, 4],
-    [253.947, 111.356, 7],
-    [298.141, 118.6, 16],
-    [210.634, 104.652, 6],
-    [253.82, 111.382, 16],
-    [210.474, 104.741, 15],
+    [114, 252, 8],
+    [114, 252, 16],
+    [172, 452, 8],
+    [172, 452, 16],
+    [284, 196, 8],
+    [284, 196, 16],
+    [368, 378, 8],
+    [368, 378, 16],
+    [454, 148, 8],
+    [454, 148, 16],
+    [522, 304, 8],
+    [522, 304, 16],
 ]
+
+
+PI = 3.1415926535897932384626433832795
 
 cycol = cycle('bgrcmyo')
 
@@ -140,7 +95,7 @@ class Circle(object):
         return self.r - self.ri
 
     def __repr__(self):
-        return '%d' % self.id
+        return '%d (%.2f, %.2f)' % (self.id, self.x, self.y)
 
 
 class ProcessCircles(object):
@@ -195,14 +150,12 @@ class PatternMatrix(object):
         rrect = cv.minAreaRect(bounding_points)
 
         x0, y0 = rrect[0]
-        wr, hr = rrect[1]
+        hr, wr = rrect[1]
         angle = 90 - rrect[2]
 
-        if self.rows < self.cols and wr > hr:
-            angle -= 90
 
-        if angle > 0:
-            angle += 180
+        if hr > wr:
+            angle += 90
 
         angle = math.radians(angle)
         cos = math.cos(angle)
@@ -225,11 +178,16 @@ class PatternMatrix(object):
         x1, y1, w, h = rect
         dx = w / self.cols
         dy = h / self.rows
+        # print('circles', circles)
+        # ax.add_artist(
+        #     plt.plot([x1], [y1], marker='o', markersize=3, color="red")
+        # )
+        # print(rrect)
 
         for e, circle in enumerate(circles):
             i = int((circle.xr - x1) / dx)
             j = int((circle.yr - y1) / dy)
-            circle.id = i + (j * self.cols)
+            circle.id = (self.cols * self.rows) - (i + (j * self.cols))
             self.matrix[j][i] = circle
 
         self.circles = circles
@@ -239,53 +197,74 @@ class PatternMatrix(object):
         # print(self.matrix)
 
 
+def process_image(img):
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    thresh = cv.GaussianBlur(gray, (9, 9), 2)
+    thresh = cv.adaptiveThreshold(thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 41, 12)
+    im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+    hierarchy = hierarchy[0]
+
+    print('contours', contours)
+    print('hierarchy', hierarchy[0])
+
+    for component in zip(contours, hierarchy):
+        currentContour = component[0]
+        currentHierarchy = component[1]
+        x,y,w,h = cv.boundingRect(currentContour)
+        if currentHierarchy[2] < 0:
+            pass
+        elif currentHierarchy[3] < 0:
+            
+            indexCircularity = (4 * PI * contourArea(
+                currentContour))/pow(arcLength(currentContour, true), 2);
+            if indexCircularity > 0.65:
+                cv.rectangle(img,(x,y),(x+w,y+h),(0,255,0),3)
+
+    # cv.drawContours(img, contours, -1, (0,255,0), 3)
+    cv.imshow('image', img)
+    
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    return im2
+
 if __name__ == '__main__':
-    cg = CircleGroup()
-    pc = ProcessCircles()
-    fig, ax = plt.subplots()
-    ax.set_xlim([0, 600])
-    ax.set_ylim([0, 600])
-    for circle in circles:
-        x, y, r = circle
-        # ax.add_artist(plt.Circle(
-        #     (x, y), r, color='r', alpha=0.5, linewidth=1, fill=False)
-        # )
-        pc.add(circle)
+    img = cv.imread('snap.png')
+    result = process_image(img)
+    
+    
+    # fig, ax = plt.subplots()
+    # ax.set_xlim([-600, 600])
+    # ax.set_ylim([-600, 600])
 
-    # all_circles = np.array([
-    #     i.get_center() + i.bounding_radius for i in pc.circle_groups],
-    #     dtype=np.float32)
-    # print(cv.boundingRect(np.array([[1.1, 2.9], [0, 0]], dtype=np.float32)))
-    # print('all_circles', all_circles)
+    # cg = CircleGroup()
+    # pc = ProcessCircles()
+    
+    # for circle in circles:
+    #     x, y, r = circle
+    #     # ax.add_artist(plt.Circle(
+    #     #     (x, y), r, color='r', alpha=0.5, linewidth=1, fill=False)
+    #     # )
+    #     pc.add(circle)
 
-    pm = PatternMatrix(5, 6)
-    pm.run(pc)
-    rect = pm.rect
-    rrect = pm.rrect
+    # pm = PatternMatrix(2, 3)
+    # pm.run(pc)
+    # rect = pm.rect
+    # rrect = pm.rrect
 
-    print(rect)
+    # for circle in pm.circles:
+    #     xr, yr = circle.xr, circle.yr
+    #     x, y = circle.x, circle.y
+    #     r1, r2 = circle.r, circle.ri
+    #     ax.scatter(x, y, color='b')
+    #     ax.scatter(xr, yr, color='r')
+        
+    #     # ax.add_artist(
+    #     #     plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
+    #     # ax.add_artist(
+    #     #     plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
 
-    # q = pm.matrix[1][5]
-    # print('**', q.xr, q.yr, q.r, q.ri)
+    #     ax.text(xr - 20, yr - 20, '%d' % circle.id)
+    #     ax.text(x - 20, y - 20, '%d' % circle.id)
 
-    for circle in pm.circles:
-        x, y = circle.x, circle.y
-        r1, r2 = circle.r, circle.ri
-        ax.scatter(x, y, color='k')
-        ax.add_artist(
-            plt.Circle((x, y), r1, color='k', linewidth=1, fill=False))
-        ax.add_artist(
-            plt.Circle((x, y), r2, color='k', linewidth=1, fill=False))
-        ax.text(x - 20, y - 20, '%d' % circle.id)
-
-    # ax.add_patch(
-    #     patches.Rectangle(
-    #         (rect[0], rect[1]), rect[2], rect[3], fill=False, color='r'))
-    # r2 = patches.Rectangle(
-    #     (rrect[0][0] - (rrect[1][0] / 2), rrect[0][1] - (rrect[1][1] / 2)), rrect[1][0], rrect[1][1], fill=False, color='b')
-    # t2 = mpl.transforms.Affine2D().rotate_deg_around(rrect[0][0], rrect[0][1], rrect[2]) + ax.transData
-    # # r2 = patches.Rectangle(
-    # #     (0, 0), rrect[1][0], rrect[1][1], fill=False, color='b')
-    # r2.set_transform(t2)
-    # ax.add_patch(r2)
-    plt.show()
+    # plt.show()
