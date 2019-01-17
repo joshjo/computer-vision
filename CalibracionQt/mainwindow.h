@@ -33,7 +33,7 @@ private slots:
 
     void on_calibrateBtn_clicked();
 
-    void calibration();
+    void calibration(Size size);
 
     void reset();
 
@@ -51,6 +51,7 @@ private:
     int modeCalibrating;
     int framesCalibration;
 
+    vector <vector<Point2f>> calibrateFramesVectors;
     vector <Mat> calibrateFrames;
 
     Mat K;
