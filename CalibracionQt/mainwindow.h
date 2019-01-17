@@ -31,11 +31,11 @@ private slots:
 
     void on_openVideoBtn_clicked();
 
-    void on_calibrateBtn_clicked();
-
-    void calibration(Size size);
+    void calibration();
 
     void reset();
+
+    void frontoParallel(Mat & K, Mat & D);
 
 private:
     Ui::MainWindow *ui;
@@ -53,6 +53,8 @@ private:
 
     vector <vector<Point2f>> calibrateFramesVectors;
     vector <Mat> calibrateFrames;
+
+    Size size;
 
     Mat K;
     Mat D;

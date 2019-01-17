@@ -26,6 +26,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 static double computeReprojectionErrors( const vector<vector<Point3f> >& objectPoints,
                                          const vector<vector<Point2f> >& imagePoints,
                                          const vector<Mat>& rvecs, const vector<Mat>& tvecs,
@@ -52,12 +53,76 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
     return std::sqrt(totalErr/totalPoints);
 }
 
+void MainWindow::frontoParallel(Mat & K, Mat & D) {
 
-void MainWindow::calibration(Size size) {
+    Point2f source [4];
+    Point2f dest [4];
+    Mat output, matGray, matThresh, matUndst, matPerspective;
+    Data result;
+    Mat Ki = K.clone();
+    Mat Di = D.clone();
+    double rms;
+    int flag = 0;
+
+    vector< Mat > rvecs, tvecs;
+
+    for (int k = 0; k < 1; k++) {
+        vector <vector<Point2f> > imgPoints;
+        vector <vector<Point3f> > objPoints;
+
+        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+            source[0] = calibrateFramesVectors[j][0];
+            source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
+            source[2] = Point2f(calibrateFramesVectors[j][0].x, calibrateFramesVectors[j][19].y);
+            source[3] = calibrateFramesVectors[j][19];
+
+            // Update this to rows
+            dest[0] = calibrateFramesVectors[j][0];
+            dest[1] = calibrateFramesVectors[j][4];
+            dest[2] = calibrateFramesVectors[j][15];
+            dest[3] = calibrateFramesVectors[j][19];
+
+            Mat matOriginal = calibrateFrames[j].clone();
+
+            undistort(matOriginal, matUndst, Ki, Di);
+            Mat lambda = getPerspectiveTransform(dest, source);
+            warpPerspective(matUndst, matPerspective, lambda, output.size());
+            Calibracion * cal = new Calibracion();
+
+            result.matSrc = matPerspective.clone();
+            result.matContours = matPerspective.clone();
+
+            cal->grayScale(matGray, matPerspective);
+            cal->thresholdMat(matThresh, matGray);
+            cal->calculateCenters(result, matThresh.clone(), rows, cols);
+
+            if(result.numValids == cols*rows){
+                vector< Point3f > obj;
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                    }
+                }
+                objPoints.push_back(obj);
+                imgPoints.push_back(result.centers);
+            }
+        }
+
+        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+
+        cout << "rms: " << rms << endl;
+
+        cout << "imgPoints size: " << imgPoints.size() << endl;
+        cout << "objPoints size: " << objPoints.size() << endl;
+    }
+
+}
+
+void MainWindow::calibration() {
 
     ui->calibrationFramesLabel->setText(QString::number(calibrateFramesVectors.size()));
-
     vector< vector< Point3f > > object_points;
+    vector <vector <Point2f> > image_points;
     double rms = 0;
     double avrTotal = 0;
     if (calibrateFramesVectors.size() == 25) {
@@ -67,22 +132,33 @@ void MainWindow::calibration(Size size) {
 //        flag |= CV_CALIB_FIX_K5;
 
             vector<float> reprojErrs;
-            for(int i = 0; i < calibrateFramesVectors.size(); i++) {
+            for(int k = 0; k < calibrateFramesVectors.size(); k++) {
 
                 vector< Point3f > obj;
+                vector< Point2f > img;
                 for (int i = 0; i < rows; i++) {
+                    vector< Point2f > rowImg;
                     for (int j = 0; j < cols; j++) {
                         obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                        rowImg.push_back(calibrateFramesVectors[k][(cols * i) + j]);
                     }
+                    sort(rowImg.begin(), rowImg.end(),
+                        [](const Point2f &a, const Point2f &b)
+                        {
+                            return a.x < b.x;
+                        }
+                    );
+                    img.insert(img.begin(), rowImg.begin(), rowImg.end());
                 }
-
-
-                    object_points.push_back(obj);
-
+                image_points.push_back(img);
+                object_points.push_back(obj);
         }
         //the final re-projection error.
-        rms = calibrateCamera(object_points, calibrateFramesVectors, size, K, D, rvecs, tvecs, flag);
-        avrTotal =  computeReprojectionErrors( object_points, calibrateFramesVectors, rvecs, tvecs,K , D,reprojErrs);
+        rms = calibrateCamera(object_points, image_points, size, K, D, rvecs, tvecs, flag);
+        avrTotal =  computeReprojectionErrors( object_points, image_points, rvecs, tvecs, K , D,reprojErrs);
+
+        frontoParallel(K, D);
+
         QString qstr = "";
 
         for(int i = 0; i < D.rows; i++)
@@ -102,11 +178,6 @@ void MainWindow::calibration(Size size) {
     }
     ui->lblRMS->setText(QString::number( rms ));
     cout << avrTotal << endl;
-}
-
-
-void MainWindow::on_calibrateBtn_clicked()
-{
 }
 
 
@@ -155,7 +226,8 @@ void MainWindow::on_pushButton_clicked()
             fprintf( stderr, "Cannot open AVI!\n" );
             return;
         }
-        Size size(cvarrToMat(frame).size());
+        Size s(cvarrToMat(frame).size());
+        size = s;
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
@@ -184,6 +256,10 @@ void MainWindow::on_pushButton_clicked()
                 if (countCal < 25 ) {
                     calibrateFramesVectors.push_back(result.centers);
                     calibrateFrames.push_back(matOriginal);
+                    countCal++;
+                }
+                if (countCal == 25) {
+                    calibration();
                     countCal++;
                 }
             }
@@ -228,11 +304,7 @@ void MainWindow::on_pushButton_clicked()
             matProcess.release();
             matGray.release();
             matThresh.release();
-
-
         }
-        calibration(size);
-
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );
 
@@ -249,44 +321,40 @@ bool MainWindow::verifyParameters()
         {
             QMessageBox::information(this, tr("Can't open the video."), "Invalid name");
             return false;
-        }else{
+        } else {
             int maxTested = 10;
             for (int i = 0; i < maxTested; i++){
                 VideoCapture tmpcamera(i);
                 bool res = (!tmpcamera.isOpened());
                 tmpcamera.release();
-                if (res)
-                {
+                if (res) {
                     QMessageBox::warning(this, tr("Error."), "No camera detected.");
                     ui->rdnCamera->setChecked(false);
                     return false;
                 }
-              }
+            }
         }
     }
-    if(ui->txtFilas->text().length() <= 0)
-    {
+
+    if(ui->txtFilas->text().length() <= 0) {
         QMessageBox::information(this, tr("Error."), "Invalid rows");
         return false;
     }
-    if(ui->txtColumnas->text().length() <= 0)
-    {
+
+    if(ui->txtColumnas->text().length() <= 0) {
         QMessageBox::information(this, tr("Error."), "Invalid columns");
         return false;
     }
+
     if(ui->circleSpacingTxt->text().length() <= 0) {
         QMessageBox::information(this, tr("Error."), "Invalid circle spacing");
         return false;
-    }
-    else
-    {
+    } else {
         rows = ui->txtFilas->text().toInt();
         cols = ui->txtColumnas->text().toInt();
         circleSpacing = ui->circleSpacingTxt->text().toDouble();
         return true;
     }
-
-
 }
 
 void MainWindow::on_openVideoBtn_clicked()
