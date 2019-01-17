@@ -57,12 +57,13 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
 
     Point2f source [4];
     Point2f dest [4];
-    Mat output, matGray, matThresh, matUndst, matPerspective;
+    Mat output, matGray, matThresh, matUndst, matPerspective, matOriginal;
     Data result;
     Mat Ki = K.clone();
     Mat Di = D.clone();
     double rms;
     int flag = 0;
+    int padding = 90;
 
     vector< Mat > rvecs, tvecs;
 
@@ -70,19 +71,43 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
         vector <vector<Point2f> > imgPoints;
         vector <vector<Point3f> > objPoints;
 
-        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
-            source[0] = calibrateFramesVectors[j][0];
-            source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
-            source[2] = Point2f(calibrateFramesVectors[j][0].x, calibrateFramesVectors[j][19].y);
-            source[3] = calibrateFramesVectors[j][19];
+//        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+        for (int j = 0; j < 1; j++) {
+            matOriginal = calibrateFrames[j].clone();
+            Mat lizTem = calibrateFrames[j].clone();
+
+//            source[0] = calibrateFramesVectors[j][0];
+//            source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
+//            source[2] = Point2f(calibrateFramesVectors[j][0].x, calibrateFramesVectors[j][19].y);
+//            source[3] = calibrateFramesVectors[j][19];
+
+//            cout << source[0] << endl;
+//            cout << source[1] << endl;
+//            cout << source[2] << endl;
+//            cout << source[3] << endl;
+            source[0] = Point2f(padding, size.height - padding);
+            source[1] = Point2f(size.width - padding, size.height - padding);
+            source[2] = Point2f(padding, padding);
+            source[3] = Point2f(size.width - padding, padding);
 
             // Update this to rows
+
             dest[0] = calibrateFramesVectors[j][0];
             dest[1] = calibrateFramesVectors[j][4];
             dest[2] = calibrateFramesVectors[j][15];
             dest[3] = calibrateFramesVectors[j][19];
 
-            Mat matOriginal = calibrateFrames[j].clone();
+            for (int z = 0; z < calibrateFramesVectors[j].size(); z++) {
+                circle(lizTem, calibrateFramesVectors[j][z], 2, Scalar(255, 0, 0), -1, 8, 0);
+            }
+
+            for (int z = 0; z < 4; z++) {
+                circle(lizTem, dest[z], 10, Scalar(0, 255, 0), -1, 8, 0);
+            }
+
+            imshow("Solange", lizTem);
+
+
 
             undistort(matOriginal, matUndst, Ki, Di);
             Mat lambda = getPerspectiveTransform(dest, source);
@@ -93,27 +118,47 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
             result.matContours = matPerspective.clone();
 
             cal->grayScale(matGray, matPerspective);
-            cal->thresholdMat(matThresh, matGray);
+            cal->thresholdMat2(matThresh, matGray);
             cal->calculateCenters(result, matThresh.clone(), rows, cols);
 
-            if(result.numValids == cols*rows){
-                vector< Point3f > obj;
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-                    }
-                }
-                objPoints.push_back(obj);
-                imgPoints.push_back(result.centers);
-            }
+
+            vector<Point2f> reprojectPoints;
+            cout << "centers" << endl;
+            cout << result.centers << endl;
+
+            imshow("result image", result.matContours);
+
+//            perspectiveTransform(result.centers, reprojectPoints, lambda.inv());
+
+//            Scalar color(23,190,187);
+//            for (size_t i = 0; i < reprojectPoints.size() ; ++i){
+//                circle(matOriginal, reprojectPoints[i], 2, color, -1, 8, 0);
+//                putText(matOriginal, to_string(i+1), reprojectPoints[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
+//                if( i > 0)
+//                    line(matOriginal,  Point( reprojectPoints[i-1].x, reprojectPoints[i-1].y),  reprojectPoints[i], color, 2);
+//            }
+
+//            if(reprojectPoints.size() == cols * rows){
+//                vector< Point3f > obj;
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+//                    }
+//                }
+//                objPoints.push_back(obj);
+//                imgPoints.push_back(reprojectPoints);
+//            }
         }
+//        cout << "imgPoints size: " << imgPoints.size() << endl;
+//        cout << "objPoints size: " << objPoints.size() << endl;
 
-        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+//        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
 
-        cout << "rms: " << rms << endl;
+//        imshow("distort", matUndst);
 
-        cout << "imgPoints size: " << imgPoints.size() << endl;
-        cout << "objPoints size: " << objPoints.size() << endl;
+//        cout << k << " new rms: " << rms << endl;
+
+
     }
 
 }
@@ -209,10 +254,11 @@ void MainWindow::on_pushButton_clicked()
         Data result;
         CvCapture* cap;
         int totalFrames = 0;
+
         if(ui->rdnCamera->isChecked())
         {
             cout << "camera" << endl;
-            cap = cvCaptureFromCAM(idCamera);
+
             totalFrames = 1500;
         }
         else
@@ -220,7 +266,7 @@ void MainWindow::on_pushButton_clicked()
             cap = cvCaptureFromAVI(name);
             totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
         }
-
+//        cap = cvCaptureFromCAM(idCamera);
         cout << "totalFrames: " << totalFrames << endl;
 
 

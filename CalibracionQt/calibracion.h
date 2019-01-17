@@ -21,6 +21,7 @@ public:
     const double PI =3.141592653589793238463;
     void grayScale(Mat &gray, Mat src);
     void thresholdMat(Mat &thresh, Mat src);
+    void thresholdMat2(Mat &thresh, Mat src);
     void calculateCenters(Data &result, Mat src, int rows, int cols);
     void orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers);
     void getCorners(vector<Point2f> points, vector<Point2f> centers, vector<Point2f> &corners);
