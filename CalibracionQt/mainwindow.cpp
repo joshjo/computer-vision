@@ -63,18 +63,16 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
     Mat Di = D.clone();
     double rms;
     int flag = 0;
-    int padding = 90;
+    int padding = 100;
 
     vector< Mat > rvecs, tvecs;
 
-    for (int k = 0; k < 1; k++) {
+    for (int k = 0; k < 10; k++) {
         vector <vector<Point2f> > imgPoints;
         vector <vector<Point3f> > objPoints;
 
-//        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
-        for (int j = 0; j < 1; j++) {
-            matOriginal = calibrateFrames[j].clone();
-            Mat lizTem = calibrateFrames[j].clone();
+        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+//        for (int j = 0; j < 1; j++) {
 
 //            source[0] = calibrateFramesVectors[j][0];
 //            source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
@@ -91,23 +89,12 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
             source[3] = Point2f(size.width - padding, padding);
 
             // Update this to rows
-
             dest[0] = calibrateFramesVectors[j][0];
             dest[1] = calibrateFramesVectors[j][4];
             dest[2] = calibrateFramesVectors[j][15];
             dest[3] = calibrateFramesVectors[j][19];
 
-            for (int z = 0; z < calibrateFramesVectors[j].size(); z++) {
-                circle(lizTem, calibrateFramesVectors[j][z], 2, Scalar(255, 0, 0), -1, 8, 0);
-            }
-
-            for (int z = 0; z < 4; z++) {
-                circle(lizTem, dest[z], 10, Scalar(0, 255, 0), -1, 8, 0);
-            }
-
-            imshow("Solange", lizTem);
-
-
+            matOriginal = calibrateFrames[j].clone();
 
             undistort(matOriginal, matUndst, Ki, Di);
             Mat lambda = getPerspectiveTransform(dest, source);
@@ -123,40 +110,35 @@ void MainWindow::frontoParallel(Mat & K, Mat & D) {
 
 
             vector<Point2f> reprojectPoints;
-            cout << "centers" << endl;
-            cout << result.centers << endl;
+            perspectiveTransform(result.centers, reprojectPoints, lambda.inv());
 
-            imshow("result image", result.matContours);
+            Scalar color(23,190,187);
+            for (size_t i = 0; i < reprojectPoints.size() ; ++i){
+                circle(matOriginal, reprojectPoints[i], 2, color, -1, 8, 0);
+                putText(matOriginal, to_string(i+1), reprojectPoints[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
+                if( i > 0)
+                    line(matOriginal,  Point( reprojectPoints[i-1].x, reprojectPoints[i-1].y),  reprojectPoints[i], color, 2);
+            }
 
-//            perspectiveTransform(result.centers, reprojectPoints, lambda.inv());
-
-//            Scalar color(23,190,187);
-//            for (size_t i = 0; i < reprojectPoints.size() ; ++i){
-//                circle(matOriginal, reprojectPoints[i], 2, color, -1, 8, 0);
-//                putText(matOriginal, to_string(i+1), reprojectPoints[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
-//                if( i > 0)
-//                    line(matOriginal,  Point( reprojectPoints[i-1].x, reprojectPoints[i-1].y),  reprojectPoints[i], color, 2);
-//            }
-
-//            if(reprojectPoints.size() == cols * rows){
-//                vector< Point3f > obj;
-//                for (int i = 0; i < rows; i++) {
-//                    for (int j = 0; j < cols; j++) {
-//                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-//                    }
-//                }
-//                objPoints.push_back(obj);
-//                imgPoints.push_back(reprojectPoints);
-//            }
+            if(reprojectPoints.size() == cols * rows){
+                vector< Point3f > obj;
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                    }
+                }
+                objPoints.push_back(obj);
+                imgPoints.push_back(reprojectPoints);
+            }
         }
-//        cout << "imgPoints size: " << imgPoints.size() << endl;
-//        cout << "objPoints size: " << objPoints.size() << endl;
+        //        cout << "imgPoints size: " << imgPoints.size() << endl;
+        //        cout << "objPoints size: " << objPoints.size() << endl;
 
-//        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
 
-//        imshow("distort", matUndst);
+        imshow("distort", matUndst);
 
-//        cout << k << " new rms: " << rms << endl;
+        cout << k << " new rms: " << rms << endl;
 
 
     }
@@ -309,7 +291,7 @@ void MainWindow::on_pushButton_clicked()
                 countRecognized++;
                 if (countCal < 25 ) {
                     calibrateFramesVectors.push_back(result.centers);
-                    calibrateFrames.push_back(matOriginal);
+                    calibrateFrames.push_back(matOriginal.clone());
                     countCal++;
                 }
                 if (countCal == 25) {
