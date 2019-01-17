@@ -200,40 +200,40 @@ void Calibracion::getCorners(vector<Point2f> points, vector<Point2f> centers, ve
     points.push_back(points[0]);
     points.push_back(points[1]);
 
-    float x_s = points[0].x;
-    float y_s = points[0].y;
+    float x_eval = points[0].x;
+    float y_eval = points[0].y;
     float x_holgura = 0.000001;
-    float m = (points[1].y - y_s)/(points[1].x - x_s + x_holgura);
+    float m = (points[1].y - y_eval)/(points[1].x - x_eval + x_holgura);
     float holgura = 10;
-    float y_eq = 0;
-    float x_eq = 0;
+    float y = 0;
+    float x = 0;
 
     for(uint i=1; i<points.size(); i++)
     {
         //  cout << corners[i] << " - " ;
-        if(abs(points[i].x - x_s) > abs(points[i].y - y_s))
+        if(abs(points[i].x - x_eval) > abs(points[i].y - y_eval))
         {
-            y_eq = m*(points[i].x - x_s) + y_s;
+            y = m*(points[i].x - x_eval) + y_eval;
 
-            if(abs(y_eq - points[i].y) >= holgura)
+            if(abs(y - points[i].y) >= holgura)
             {
                 corners.push_back(points[i-1]);
-                x_s = points[i-1].x;
-                y_s = points[i-1].y;
-                m = (points[i].y - y_s)/(points[i].x - x_s + x_holgura);
+                x_eval = points[i-1].x;
+                y_eval = points[i-1].y;
+                m = (points[i].y - y_eval)/(points[i].x - x_eval + x_holgura);
             }
 
         }
         else
         {
-            x_eq = (points[i].y - y_s)/m + x_s;
+            x = (points[i].y - y_eval)/m + x_eval;
 
-            if(abs(x_eq - points[i].x) >= holgura)
+            if(abs(x - points[i].x) >= holgura)
             {
                 corners.push_back(points[i-1]);
-                x_s = points[i-1].x;
-                y_s = points[i-1].y;
-                m = (points[i].y - y_s)/(points[i].x - x_s + x_holgura);
+                x_eval = points[i-1].x;
+                y_eval = points[i-1].y;
+                m = (points[i].y - y_eval)/(points[i].x - x_eval + x_holgura);
             }
 
         }
@@ -242,20 +242,20 @@ void Calibracion::getCorners(vector<Point2f> points, vector<Point2f> centers, ve
 
     }
     //cout<<sorted_ellipses.size()<<endl;
-    x_s = corners[0].x;
-    y_s = corners[0].y;
-    m = (corners[1].y - y_s)/(corners[1].x - x_s + x_holgura);
+    x_eval = corners[0].x;
+    y_eval = corners[0].y;
+    m = (corners[1].y - y_eval)/(corners[1].x - x_eval + x_holgura);
 
     int count_dist1 = 0;
     int count_dist2 = 0;
 
     for(uint i=0; i<centers.size(); i++)
     {
-        if(abs(centers[i].x - x_s) > abs(centers[i].y - y_s))
+        if(abs(centers[i].x - x_eval) > abs(centers[i].y - y_eval))
         {
-            y_eq = m*(centers[i].x - x_s) + y_s;
+            y = m*(centers[i].x - x_eval) + y_eval;
 
-            if(abs(y_eq - centers[i].y) >= holgura)
+            if(abs(y - centers[i].y) >= holgura)
             {
                 count_dist1++;
             }
@@ -263,9 +263,9 @@ void Calibracion::getCorners(vector<Point2f> points, vector<Point2f> centers, ve
         }
         else
         {
-            x_eq = (centers[i].y - y_s)/m + x_s;
+            x = (centers[i].y - y_eval)/m + x_eval;
 
-            if(abs(x_eq - centers[i].x) >= holgura)
+            if(abs(x - centers[i].x) >= holgura)
             {
                 count_dist1++;
             }
@@ -273,17 +273,17 @@ void Calibracion::getCorners(vector<Point2f> points, vector<Point2f> centers, ve
         }
     }
 
-    x_s = corners[1].x;
-    y_s = corners[1].y;
-    m = (corners[2].y - y_s)/(corners[2].x - x_s + x_holgura);
+    x_eval = corners[1].x;
+    y_eval = corners[1].y;
+    m = (corners[2].y - y_eval)/(corners[2].x - x_eval + x_holgura);
 
     for(uint i=0; i<centers.size(); i++)
     {
-        if(abs(centers[i].x - x_s) > abs(centers[i].y - y_s))
+        if(abs(centers[i].x - x_eval) > abs(centers[i].y - y_eval))
         {
-            y_eq = m*(centers[i].x - x_s) + y_s;
+            y = m*(centers[i].x - x_eval) + y_eval;
 
-            if(abs(y_eq - centers[i].y) >= holgura)
+            if(abs(y - centers[i].y) >= holgura)
             {
                 count_dist2++;
             }
@@ -291,16 +291,15 @@ void Calibracion::getCorners(vector<Point2f> points, vector<Point2f> centers, ve
         }
         else
         {
-            x_eq = (centers[i].y - y_s)/m + x_s;
+            x = (centers[i].y - y_eval)/m + x_eval;
 
-            if(abs(x_eq - centers[i].x) >= holgura)
+            if(abs(x - centers[i].x) >= holgura)
             {
                 count_dist2++;
             }
 
         }
     }
-
 
     if(count_dist1 < count_dist2)
     {
@@ -347,12 +346,21 @@ vector<Point2f> Calibracion::pointsMiddleRow(int numPoints, Point2f p1, Point2f 
     });
 
     centers.clear();
+    int count = 0;
+    float y_cal = 0;
     for(int i = 0 ; i < distances.size(); i++)
     {
-        if(i < numPoints)
+        // value y is the same
+        y_cal = m*(p1.x - distances[i].x);
+        if(count < numPoints && abs(y_cal - distances[i].y) < 5)
+        {
             pointsMiddle.push_back(Point2f(distances[i].x, distances[i].y));
+            count++;
+        }
         else
+        {
             centers.push_back(Point2f(distances[i].x, distances[i].y));
+        }
     }
     //order x
     sort(pointsMiddle.begin(), pointsMiddle.end(),[ ]( const Point2f& lhs, const Point2f& rhs )

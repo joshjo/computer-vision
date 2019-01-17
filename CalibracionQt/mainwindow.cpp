@@ -208,13 +208,21 @@ void MainWindow::on_pushButton_clicked()
         Mat matOriginal,matProcess, matGray, matThresh;
         Data result;
         CvCapture* cap;
+        int totalFrames = 0;
         if(ui->rdnCamera->isChecked())
-            cap = cvCaptureFromCAM(0);
+        {
+            cout << "camera" << endl;
+            cap = cvCaptureFromCAM(idCamera);
+            totalFrames = 1500;
+        }
         else
+        {
             cap = cvCaptureFromAVI(name);
-        int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
+            totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
+        }
 
         cout << "totalFrames: " << totalFrames << endl;
+
 
         IplImage* frame = cvQueryFrame( cap );
 
@@ -231,7 +239,7 @@ void MainWindow::on_pushButton_clicked()
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
-        while( key != 'x' && c < 3500  )//&& count < 1500)
+        while( key != 'x' && c < totalFrames)
         {
             c++;
             frame = cvQueryFrame( cap );
@@ -323,15 +331,21 @@ bool MainWindow::verifyParameters()
             return false;
         } else {
             int maxTested = 10;
+            bool res = false;
             for (int i = 0; i < maxTested; i++){
                 VideoCapture tmpcamera(i);
-                bool res = (!tmpcamera.isOpened());
+                res = (tmpcamera.isOpened());
                 tmpcamera.release();
                 if (res) {
-                    QMessageBox::warning(this, tr("Error."), "No camera detected.");
-                    ui->rdnCamera->setChecked(false);
-                    return false;
+                    idCamera = i;
+                    return true;
                 }
+            }
+            if(!res)
+            {
+                QMessageBox::warning(this, tr("Error."), "No camera detected.");
+                ui->rdnCamera->setChecked(false);
+                return true;
             }
         }
     }

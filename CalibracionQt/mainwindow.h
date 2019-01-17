@@ -47,6 +47,7 @@ private:
     int wResize = 420;
     int hResize = 236;
     double circleSpacing = 0.0;
+    int idCamera = 0;
 
     int modeCalibrating;
     int framesCalibration;
