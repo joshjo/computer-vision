@@ -55,94 +55,100 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 
 void MainWindow::frontoParallel(Mat & K, Mat & D) {
 
-    Point2f source [4];
-    Point2f dest [4];
-    Mat output, matGray, matThresh, matUndst, matPerspective, matOriginal;
+//    Point2f source [4];
+
+//    Point2f dest [4];
+    Mat matGray, matThresh, matUndst, matPerspective, matOriginal;
     Data result;
     Mat Ki = K.clone();
     Mat Di = D.clone();
     double rms;
     int flag = 0;
-    int padding = 100;
+    int padding = 80;
+
+    Size outputSize = Size(size.width, size.width / 1.25);
+
+    cout << "outputSize: " << outputSize << endl;
 
     vector< Mat > rvecs, tvecs;
 
-    for (int k = 0; k < 10; k++) {
+    vector<Mat> perspectives;
+
+    int stepX = size.width / cols;
+    int stepY = size.height / rows;
+
+    cout << "size: " << size.width << " " << size.height << endl;
+
+    cout << "cols: " << cols << endl;
+    cout << "rows: " << rows << endl;
+
+    for (int k = 0; k < 1; k++) {
         vector <vector<Point2f> > imgPoints;
         vector <vector<Point3f> > objPoints;
 
-        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
-//        for (int j = 0; j < 1; j++) {
-
-//            source[0] = calibrateFramesVectors[j][0];
-//            source[1] = Point2f(calibrateFramesVectors[j][19].x, calibrateFramesVectors[j][0].y);
-//            source[2] = Point2f(calibrateFramesVectors[j][0].x, calibrateFramesVectors[j][19].y);
-//            source[3] = calibrateFramesVectors[j][19];
-
-//            cout << source[0] << endl;
-//            cout << source[1] << endl;
-//            cout << source[2] << endl;
-//            cout << source[3] << endl;
-            source[0] = Point2f(padding, size.height - padding);
-            source[1] = Point2f(size.width - padding, size.height - padding);
-            source[2] = Point2f(padding, padding);
-            source[3] = Point2f(size.width - padding, padding);
-
-            // Update this to rows
-            dest[0] = calibrateFramesVectors[j][0];
-            dest[1] = calibrateFramesVectors[j][4];
-            dest[2] = calibrateFramesVectors[j][15];
-            dest[3] = calibrateFramesVectors[j][19];
+//        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+        for (int j = 0; j < 1; j++) {
+            vector <Point2f> dest;
 
             matOriginal = calibrateFrames[j].clone();
 
-            undistort(matOriginal, matUndst, Ki, Di);
-            Mat lambda = getPerspectiveTransform(dest, source);
-            warpPerspective(matUndst, matPerspective, lambda, output.size());
-            Calibracion * cal = new Calibracion();
-
-            result.matSrc = matPerspective.clone();
-            result.matContours = matPerspective.clone();
-
-            cal->grayScale(matGray, matPerspective);
-            cal->thresholdMat2(matThresh, matGray);
-            cal->calculateCenters(result, matThresh.clone(), rows, cols);
-
-
-            vector<Point2f> reprojectPoints;
-            perspectiveTransform(result.centers, reprojectPoints, lambda.inv());
-
-            Scalar color(23,190,187);
-            for (size_t i = 0; i < reprojectPoints.size() ; ++i){
-                circle(matOriginal, reprojectPoints[i], 2, color, -1, 8, 0);
-                putText(matOriginal, to_string(i+1), reprojectPoints[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
-                if( i > 0)
-                    line(matOriginal,  Point( reprojectPoints[i-1].x, reprojectPoints[i-1].y),  reprojectPoints[i], color, 2);
-            }
-
-            if(reprojectPoints.size() == cols * rows){
-                vector< Point3f > obj;
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-                    }
+            for(int y = rows - 1; y >= 0; y--) {
+                for (int x = 0; x < cols; x++) {
+                    dest.push_back(Point2f((stepX * x) + padding, (stepY * y) + padding));
                 }
-                objPoints.push_back(obj);
-                imgPoints.push_back(reprojectPoints);
             }
+
+            undistort(matOriginal, matUndst, Ki, Di);
+            Mat lambda = findHomography(calibrateFramesVectors[j], dest, 0);
+            warpPerspective(matUndst, matPerspective, lambda, outputSize);
+            imshow("jerspective", matPerspective);
+//            Calibracion * cal = new Calibracion();
+
+//            perspectives.push_back(matPerspective.clone());
+
+//            result.matSrc = matPerspective.clone();
+//            result.matContours = matPerspective.clone();
+
+//            cal->grayScale(matGray, matPerspective);
+//            cal->thresholdMat2(matThresh, matGray);
+//            cal->calculateCenters(result, matThresh.clone(), rows, cols);
+
+//            vector<Point2f> reprojectPoints;
+//            perspectiveTransform(result.centers, reprojectPoints, lambda.inv());
+
+//            Scalar color(23,190,187);
+//            for (size_t i = 0; i < reprojectPoints.size() ; ++i){
+//                circle(matOriginal, reprojectPoints[i], 2, color, -1, 8, 0);
+//                putText(matOriginal, to_string(i+1), reprojectPoints[i], FONT_HERSHEY_SCRIPT_COMPLEX, 1 , color,  1); // Line Thickness (Optional)
+//                if( i > 0)
+//                    line(matOriginal,  Point( reprojectPoints[i-1].x, reprojectPoints[i-1].y),  reprojectPoints[i], color, 2);
+//            }
+
+//            if(reprojectPoints.size() == cols * rows){
+//                vector< Point3f > obj;
+//                for (int i = 0; i < rows; i++) {
+//                    for (int j = 0; j < cols; j++) {
+//                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+//                    }
+//                }
+//                objPoints.push_back(obj);
+//                imgPoints.push_back(reprojectPoints);
+//            }
         }
-        //        cout << "imgPoints size: " << imgPoints.size() << endl;
-        //        cout << "objPoints size: " << objPoints.size() << endl;
 
-        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+//        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
 
-        imshow("distort", matUndst);
+//        imshow("distort", matUndst);
 
-        cout << k << " new rms: " << rms << endl;
+////        char buffer [50];
 
+////        for (int i = 0; i < perspectives.size(); i++) {
+////            sprintf (buffer, "perspective %d", i + 1);
+////            imshow(buffer, perspectives[i]);
+////        }
 
+//        cout << k << " new rms: " << rms << endl;
     }
-
 }
 
 void MainWindow::calibration() {
@@ -267,7 +273,7 @@ void MainWindow::on_pushButton_clicked()
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
-        while( key != 'x' && c < totalFrames)
+        while( key != 'x')
         {
             c++;
             frame = cvQueryFrame( cap );
@@ -285,18 +291,19 @@ void MainWindow::on_pushButton_clicked()
             time = (double(t1-t0)/CLOCKS_PER_SEC);
             count++;
 
-
-            if(result.numValids == cols*rows){
-                timeTotal += time;
-                countRecognized++;
-                if (countCal < 25 ) {
-                    calibrateFramesVectors.push_back(result.centers);
-                    calibrateFrames.push_back(matOriginal.clone());
-                    countCal++;
-                }
-                if (countCal == 25) {
-                    calibration();
-                    countCal++;
+            if (count % 2 == 0) {
+                if(result.numValids == cols*rows){
+                    timeTotal += time;
+                    countRecognized++;
+                    if (countCal < 25) {
+                        calibrateFramesVectors.push_back(result.centers);
+                        calibrateFrames.push_back(matOriginal.clone());
+                        countCal++;
+                    }
+                    if (countCal == 25) {
+                        calibration();
+                        countCal++;
+                    }
                 }
             }
 
