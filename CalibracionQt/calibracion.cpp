@@ -13,14 +13,143 @@ void Calibracion::grayScale(Mat &greyColor, Mat src)
 
 void Calibracion::thresholdMat(Mat &thresh, Mat src)
 {
-    GaussianBlur(src, thresh,Size(9,9), 2, 2);
-    //adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,6);
-    //adaptiveThreshold(thresh, thresh,255,ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY,11,3);
-    adaptiveThreshold(thresh, thresh, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV, 41, 12);
-    Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5), Point(2,2));
-    // erode(thresh, thresh, element);
-    // dilate(thresh, thresh, element);
 
+    GaussianBlur(src, thresh,Size(5,5), 2, 2);
+
+    adaptiveThreshold(thresh, thresh, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 15, 5); //41-12/ 15-5
+    dilate(thresh, thresh, element);
+     erode(thresh, thresh, elementErode);
+
+/*
+     int blockSize=21;
+     int threshold=10;
+     Mat binary = thresh.clone();
+     int nl = binary.rows; // number of lines
+     int nc = binary.cols; // total number of elements per line
+     // compute integral image
+     cv::Mat iimage;
+     cv::integral(src, iimage, CV_32S);
+     //for each row
+     int halfSize = blockSize/2;
+     for(int j=halfSize; j<nl - halfSize -1;j++ ){
+         // get the address of row j
+         uchar* data = binary.ptr<uchar>(j);
+         int* idata1 = iimage.ptr<int>(j-halfSize); // 滑动窗口上边
+         int* idata2 = iimage.ptr<int>(j+halfSize+1); // 滑动窗口下边
+         //for pixel of a line
+         for(int i=halfSize; i<nc-halfSize-1;i++){
+             //compute pix_mean
+             int pix_mean = (idata2[i+halfSize+1]-idata2[i-halfSize]-idata1[i+halfSize+1]
+                     +idata1[i-halfSize])/(blockSize*blockSize);
+             //apply adaptive threshold
+             if(data[i]>(pix_mean-threshold))
+                 data[i] = 0;
+             else
+                 data[i]  =255;
+         }
+     }
+     // add white border
+     for(int j=0;j<halfSize;j++){
+         uchar *data = binary.ptr<uchar>(j);
+         for(int i=0; i<binary.cols;i++)
+             data[i] = 255;
+     }
+     for(int j=binary.rows-halfSize-1;j<binary.rows;j++){
+         uchar * data = binary.ptr<uchar>(j);
+         for(int i=0; i<binary.cols;i++){
+             data[i] = 255;
+         }
+     }
+     for(int j=halfSize;j<nl-halfSize-1;j++){
+         uchar* data = binary.ptr<uchar>(j);
+         for(int i=0; i<halfSize;i++)
+             data[i] = 255;
+         for(int i=binary.cols-halfSize-1;i<binary.cols;i++)
+             data[i] = 255;
+     }
+    thresh = binary.clone();
+    */
+}
+
+/**
+ * Fuente : https://github.com/phryniszak/AdaptiveIntegralThresholding
+*/
+void Calibracion::thresholdIntegral(Mat &thresh, Mat &input)
+{
+    GaussianBlur(input, thresh,Size(9,9), 2, 2);
+
+    // accept only char type matrices
+        CV_Assert(!input.empty());
+        CV_Assert(input.depth() == CV_8U);
+        CV_Assert(input.channels() == 1);
+        CV_Assert(!input.empty());
+        CV_Assert(input.depth() == CV_8U);
+        CV_Assert(input.channels() == 1);
+
+        // rows -> height -> y
+        int nRows = input.rows;
+        // cols -> width -> x
+        int nCols = input.cols;
+
+        // create the integral image
+        cv::Mat sumMat;
+        cv::integral(input, sumMat);
+
+        CV_Assert(sumMat.depth() == CV_32S);
+        CV_Assert(sizeof(int) == 4);
+
+        int S = MAX(nRows, nCols)/8;
+        double T = 0.15;
+
+        // perform thresholding
+        int s2 = S/2;
+        int x1, y1, x2, y2, count, sum;
+
+        // CV_Assert(sizeof(int) == 4);
+        int *p_y1, *p_y2;
+        uchar *p_inputMat, *p_outputMat;
+
+        for( int i = 0; i < nRows; ++i)
+        {
+            y1 = i-s2;
+            y2 = i+s2;
+
+            if (y1 < 0){
+                y1 = 0;
+            }
+            if (y2 >= nRows) {
+                y2 = nRows-1;
+            }
+
+            p_y1 = sumMat.ptr<int>(y1);
+            p_y2 = sumMat.ptr<int>(y2);
+            p_inputMat = input.ptr<uchar>(i);
+            p_outputMat = thresh.ptr<uchar>(i);
+
+            for ( int j = 0; j < nCols; ++j)
+            {
+                // set the SxS region
+                x1 = j-s2;
+                x2 = j+s2;
+
+                if (x1 < 0) {
+                    x1 = 0;
+                }
+                if (x2 >= nCols) {
+                    x2 = nCols-1;
+                }
+
+                count = (x2-x1)*(y2-y1);
+
+                // I(x,y)=s(x2,y2)-s(x1,y2)-s(x2,y1)+s(x1,x1)
+                sum = p_y2[x2] - p_y1[x2] - p_y2[x1] + p_y1[x1];
+
+                if ((int)(p_inputMat[j] * count) < (int)(sum*(1.0-T)))
+                    p_outputMat[j] = 255;
+                else
+                    p_outputMat[j] = 0;
+            }
+        }
 }
 
 void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, int cols)
@@ -39,44 +168,56 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     //findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
     findContours( srcThresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
     // cout << contours.size() << "size" << endl;
+
     double indexCircularity = 0;
-    vector<PatternRing> rings;
+    RotatedRect rect;
+    RotatedRect rectChild;
     vector<Point2f> points;
+
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
 
-        if(contours[idx].size() > 4 && !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
+        if( contours[idx].size() > 4 && !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
         {
 
             indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
 
-            if( indexCircularity > 0.65 && contours[hierarchy[idx][2]].size() > 4)
+            if( indexCircularity > 0.75 && contours[hierarchy[idx][2]].size() > 4)
             {
-                drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
-                drawContours( resultData.matContours, contours, hierarchy[idx][2],  Scalar(0,0,255), CV_INTER_LINEAR, 8, hierarchy );
 
-                RotatedRect rect = fitEllipse(contours[idx]);
-                RotatedRect rectChild = fitEllipse(contours[hierarchy[idx][2]]);
+                rect = fitEllipse(contours[idx]);
+                rectChild = fitEllipse(contours[hierarchy[idx][2]]);
 
-                //mean center
-                double xCenter = (rect.center.x + rectChild.center.x)/2;
-                double yCenter = (rect.center.y + rectChild.center.y)/2;
-                //rings.push_back(PatternRing(idx, xCenter, yCenter));
-                points.push_back(Point( xCenter, yCenter));
+                indexCircularity = (4 * PI * contourArea(contours[hierarchy[idx][2]]))/pow(arcLength(contours[hierarchy[idx][2]], true),2);
+                if( indexCircularity > 0.75 )
+                {
+                    drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
+                    drawContours( resultData.matContours, contours, hierarchy[idx][2],  Scalar(0,0,255), CV_INTER_LINEAR, 8, hierarchy );
 
+                    //mean center
+                    // double xCenter = (rect.center.x + rectChild.center.x)/2;
+                    // double yCenter = (rect.center.y + rectChild.center.y)/2;
+                    double xCenter = rect.center.x ;
+                    double yCenter = rect.center.y ;
+                    //rings.push_back(PatternRing(idx, xCenter, yCenter));
+                    points.push_back(Point( xCenter, yCenter));
+                }
             }
         }
 
     }
     //vector<Point> pointsSorted;
     vector<Point2f> ringsSorted = points;
-
+    int verifyCount = 0;
     // cout << "centers " << points.size() << endl;
     if( points.size() == rows*cols)
     {
-        orderPoints(resultData.matSrc, rows, cols, ringsSorted, points);
+        verifyCount = orderPoints(resultData.matSrc, rows, cols, ringsSorted, points);
 
         resultData.centers = ringsSorted;
+        cout << "ring " << ringsSorted.size() << endl;
+        if(verifyCount ==  rows*cols)
+        {
         Scalar color(23,190,187);
         for (size_t i = 0; i < ringsSorted.size() ; ++i){
             circle(resultData.matSrc, ringsSorted[i], 2, color, -1, 8, 0);
@@ -85,13 +226,16 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
                 line(resultData.matSrc,  Point( ringsSorted[i-1].x, ringsSorted[i-1].y),  ringsSorted[i], color, 2);
 
         }
+        }
     }
-    resultData.numValids = points.size();
+    resultData.numValids = verifyCount;
 }
 
-void Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
+int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
 {
+    int countResult = 0;
     vector<Point2f> points;
+    vector<Point2f> centerTemp;
     vector<Point2f> tempSortedCorner;
 
 
@@ -104,32 +248,64 @@ void Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &rin
     ringsSorted[4] = tempSortedCorner[1];
     ringsSorted[15] = tempSortedCorner[2];
     ringsSorted[19] = tempSortedCorner[3];
+    countResult = 4;
+    //Eliminar puntos
+    for(int i=0; i<centers.size(); i++)
+    {
+        if(!((abs(centers[i].x - ringsSorted[0].x) < 1 && abs(centers[i].y - ringsSorted[0].y) < 1)
+             || (abs(centers[i].x - ringsSorted[4].x) < 1 && abs(centers[i].y - ringsSorted[4].y) < 1)
+             || (abs(centers[i].x - ringsSorted[15].x) < 1 && abs(centers[i].y - ringsSorted[15].y) < 1)
+             || (abs(centers[i].x - ringsSorted[19].x) < 1 && abs(centers[i].y - ringsSorted[19].y) < 1)))
+        {
+            centerTemp.push_back(centers[i]);
+        }
+
+    }
+
+    centers = centerTemp;
 
     //Get middle points
-    middlePoints = pointsMiddle(tempSortedCorner[0], tempSortedCorner[1], centers);
+    /*Row: 0-5*/
+    middlePoints = pointsMiddle(tempSortedCorner[0], tempSortedCorner[1], centers); //3
+    countResult += 3;
+    cout << " final 3 "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
+    if(middlePoints.size() < 3)
+        return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[0], middlePoints);
     for (int i=0; i<middlePoints.size(); i++)
     {
         ringsSorted[i+1] = middlePoints[i];
     }
 
-    middlePoints = pointsMiddle(tempSortedCorner[0], tempSortedCorner[2], centers);
+    /**/
+    middlePoints = pointsMiddle(tempSortedCorner[0], tempSortedCorner[2], centers); //2
+     countResult += 2;
+    cout << " final 2 "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
+    if(middlePoints.size() < 2)
+        return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[0], middlePoints);
     for (int i=0; i<middlePoints.size(); i++)
     {
         ringsSorted[(i+1)*5] = middlePoints[i];
     }
 
-
-    middlePoints = pointsMiddle(tempSortedCorner[2], tempSortedCorner[3], centers);
+     /*Row: 15-19*/
+    middlePoints = pointsMiddle(tempSortedCorner[2], tempSortedCorner[3], centers); //3
+     countResult += 3;
+    cout << " final 3 "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
+    if(middlePoints.size() < 3)
+        return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[2], middlePoints);
-
     for (int i=0; i<middlePoints.size(); i++)
     {
         ringsSorted[i+16] = middlePoints[i];
     }
 
-    middlePoints = pointsMiddle(tempSortedCorner[1], tempSortedCorner[3], centers);
+    middlePoints = pointsMiddle(tempSortedCorner[1], tempSortedCorner[3], centers);//2 points
+     countResult += 2;
+    if(middlePoints.size() < 2)
+        return countResult;
+    cout << " final 2* "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
     middlePoints  = orderPointsMiddle(tempSortedCorner[1], middlePoints);
 
     for (int i=0; i<middlePoints.size(); i++)
@@ -137,15 +313,24 @@ void Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &rin
         ringsSorted[9+(i*5)] = middlePoints[i];
     }
 
-    middlePoints = pointsMiddle(ringsSorted[5], ringsSorted[9], centers);
+    /*Row: 5-9*/
+    middlePoints = pointsMiddle(ringsSorted[5], ringsSorted[9], centers); //3
+     countResult += 3;
+     cout << " final 5-9 "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
+    if(middlePoints.size() < 3)
+        return countResult;
     middlePoints  = orderPointsMiddle(ringsSorted[5], middlePoints);
 
     for (int i=0; i<middlePoints.size(); i++)
     {
         ringsSorted[i+6] = middlePoints[i];
     }
-
-    middlePoints = pointsMiddle(ringsSorted[10], ringsSorted[14], centers);
+     /*Row: 10-14*/
+    middlePoints = pointsMiddle(ringsSorted[10], ringsSorted[14], centers); //3
+     countResult += 3;
+    cout << " final 3 "<< centers.size() << " selec: "<< middlePoints.size() <<endl;
+    if(middlePoints.size() < 3)
+        return countResult;
     middlePoints  = orderPointsMiddle(ringsSorted[10], middlePoints);
 
     for (int i=0; i<middlePoints.size(); i++)
@@ -153,6 +338,7 @@ void Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &rin
         ringsSorted[i+11] = middlePoints[i];
     }
 
+    return  countResult;
 }
 
 /*
@@ -468,7 +654,8 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
     float d1_y = 0;
     float d2_x = 0;
     float d2_y = 0;
-    int holgura = 5;
+    int holgura = 4;
+    int holguramin = 2;
 
 
     for(int i=0; i<centers.size(); i++)
@@ -483,6 +670,7 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
             if(d1_x > d1_y)
             {
                 y = m*(centers[i].x - p1.x) + p1.y;
+
                 if(abs(y - centers[i].y) <= holgura)
                 {
                     pointsMiddle.push_back(centers[i]);
@@ -496,7 +684,6 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
             else
             {
                 x = (centers[i].y - p1.y)/m + p1.x;
-
                 if(abs(x - centers[i].x) <= holgura)
                 {
                     pointsMiddle.push_back(centers[i]);
@@ -508,13 +695,9 @@ vector<Point2f> Calibracion::pointsMiddle(Point2f p1, Point2f p2, vector<Point2f
 
             }
         }
-        else
-        {
-            tempDelete.push_back(centers[i]);
-        }
+
     }
-
+    //remove p1 y p2 de template
     centers = tempDelete;
-
     return pointsMiddle;
 }

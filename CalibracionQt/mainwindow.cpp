@@ -231,9 +231,11 @@ void MainWindow::on_pushButton_clicked()
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
-        while( key != 'x' && c < 3500  )//&& count < 1500)
+        while( key != 'x' && c < 1254  )//&& count < 1500)
         {
             c++;
+             cout << c << endl;
+
             frame = cvQueryFrame( cap );
             if( !frame ) break;
             matOriginal = cv::cvarrToMat(frame);
@@ -244,6 +246,7 @@ void MainWindow::on_pushButton_clicked()
             t0=clock();
             objCal->grayScale(matGray, matOriginal);
             objCal->thresholdMat(matThresh, matGray);
+           // objCal->thresholdIntegral(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
             time = (double(t1-t0)/CLOCKS_PER_SEC);
@@ -259,7 +262,7 @@ void MainWindow::on_pushButton_clicked()
                     countCal++;
                 }
                 if (countCal == 25) {
-                    calibration();
+                  //  calibration();
                     countCal++;
                 }
             }
@@ -269,7 +272,7 @@ void MainWindow::on_pushButton_clicked()
             ui->lblNumTotal->setText(QString::number(count));
             ui->lblReconodicos->setText(QString::number(countRecognized));
 
-            imshow("josue", result.matSrc);
+            imshow("josue", result.matContours);
             //imshow("liz", result.matContours);
 
             image = QImage(matOriginal. data,matOriginal.cols, matOriginal.rows, QImage::Format_RGB888);
