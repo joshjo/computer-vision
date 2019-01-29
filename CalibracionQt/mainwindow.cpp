@@ -231,10 +231,8 @@ void MainWindow::on_pushButton_clicked()
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
-        while( key != 'x' && c < 1254  )//&& count < 1500)
+        while( key != 'x' )//&& count < 1500)
         {
-            c++;
-             cout << c << endl;
 
             frame = cvQueryFrame( cap );
             if( !frame ) break;
@@ -307,6 +305,7 @@ void MainWindow::on_pushButton_clicked()
             matProcess.release();
             matGray.release();
             matThresh.release();
+            c++;
         }
         ui->lblAvgTime->setText(QString::number(timeTotal/countRecognized));
         cvReleaseCapture( &cap );
