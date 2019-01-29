@@ -4,8 +4,8 @@
 
 
 bool doesExist (const std::string& name) {
-  struct stat buffer;
-  return (stat (name.c_str(), &buffer) == 0);
+    struct stat buffer;
+    return (stat (name.c_str(), &buffer) == 0);
 }
 
 
@@ -128,30 +128,30 @@ void MainWindow::calibration() {
     if (calibrateFramesVectors.size() == 25) {
         vector< Mat > rvecs, tvecs;
         int flag = 0;
-//        flag |= CV_CALIB_FIX_K4;
-//        flag |= CV_CALIB_FIX_K5;
+        //        flag |= CV_CALIB_FIX_K4;
+        //        flag |= CV_CALIB_FIX_K5;
 
-            vector<float> reprojErrs;
-            for(int k = 0; k < calibrateFramesVectors.size(); k++) {
+        vector<float> reprojErrs;
+        for(int k = 0; k < calibrateFramesVectors.size(); k++) {
 
-                vector< Point3f > obj;
-                vector< Point2f > img;
-                for (int i = 0; i < rows; i++) {
-                    vector< Point2f > rowImg;
-                    for (int j = 0; j < cols; j++) {
-                        obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
-                        rowImg.push_back(calibrateFramesVectors[k][(cols * i) + j]);
-                    }
-                    sort(rowImg.begin(), rowImg.end(),
-                        [](const Point2f &a, const Point2f &b)
-                        {
-                            return a.x < b.x;
-                        }
-                    );
-                    img.insert(img.begin(), rowImg.begin(), rowImg.end());
+            vector< Point3f > obj;
+            vector< Point2f > img;
+            for (int i = 0; i < rows; i++) {
+                vector< Point2f > rowImg;
+                for (int j = 0; j < cols; j++) {
+                    obj.push_back(Point3f((float)j * circleSpacing, (float)i * circleSpacing, 0));
+                    rowImg.push_back(calibrateFramesVectors[k][(cols * i) + j]);
                 }
-                image_points.push_back(img);
-                object_points.push_back(obj);
+                sort(rowImg.begin(), rowImg.end(),
+                     [](const Point2f &a, const Point2f &b)
+                {
+                    return a.x < b.x;
+                }
+                );
+                img.insert(img.begin(), rowImg.begin(), rowImg.end());
+            }
+            image_points.push_back(img);
+            object_points.push_back(obj);
         }
         //the final re-projection error.
         rms = calibrateCamera(object_points, image_points, size, K, D, rvecs, tvecs, flag);
@@ -208,13 +208,21 @@ void MainWindow::on_pushButton_clicked()
         Mat matOriginal,matProcess, matGray, matThresh;
         Data result;
         CvCapture* cap;
+        int totalFrames = 0;
         if(ui->rdnCamera->isChecked())
-            cap = cvCaptureFromCAM(0);
+        {
+            cout << "camera" << endl;
+            cap = cvCaptureFromCAM(idCamera);
+            totalFrames = 1500;
+        }
         else
+        {
             cap = cvCaptureFromAVI(name);
-        int totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10;
+            totalFrames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT) / 10; //?
+        }
 
         cout << "totalFrames: " << totalFrames << endl;
+
 
         IplImage* frame = cvQueryFrame( cap );
 
@@ -231,7 +239,8 @@ void MainWindow::on_pushButton_clicked()
         namedWindow("josue", WINDOW_AUTOSIZE);
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
-        while( key != 'x' )//&& count < 1500)
+
+        while( key != 'x')// && c < totalFrames)
         {
 
             frame = cvQueryFrame( cap );
@@ -244,7 +253,7 @@ void MainWindow::on_pushButton_clicked()
             t0=clock();
             objCal->grayScale(matGray, matOriginal);
             objCal->thresholdMat(matThresh, matGray);
-           // objCal->thresholdIntegral(matThresh, matGray);
+            // objCal->thresholdIntegral(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
             time = (double(t1-t0)/CLOCKS_PER_SEC);
@@ -260,7 +269,7 @@ void MainWindow::on_pushButton_clicked()
                     countCal++;
                 }
                 if (countCal == 25) {
-                  //  calibration();
+                    //  calibration();
                     countCal++;
                 }
             }
@@ -325,15 +334,21 @@ bool MainWindow::verifyParameters()
             return false;
         } else {
             int maxTested = 10;
+            bool res = false;
             for (int i = 0; i < maxTested; i++){
                 VideoCapture tmpcamera(i);
-                bool res = (!tmpcamera.isOpened());
+                res = (tmpcamera.isOpened());
                 tmpcamera.release();
                 if (res) {
-                    QMessageBox::warning(this, tr("Error."), "No camera detected.");
-                    ui->rdnCamera->setChecked(false);
-                    return false;
+                    idCamera = i;
+                    return true;
                 }
+            }
+            if(!res)
+            {
+                QMessageBox::warning(this, tr("Error."), "No camera detected.");
+                ui->rdnCamera->setChecked(false);
+                return true;
             }
         }
     }
@@ -366,7 +381,7 @@ void MainWindow::on_openVideoBtn_clicked()
                 this,
                 tr("Abrir video"), "",
                 tr("video (*.avi *.mp4)")
-    );
+                );
     if (fileName.isEmpty())
         return;
     else {
