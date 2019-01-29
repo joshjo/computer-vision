@@ -76,13 +76,11 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
 
-    int idx = 0;
+    unsigned long idx = 0;
     Vec3f circleTemp;
     RotatedRect rectRot;
     vector<int> ellipses;
 
-    // Canny(srcThresh, srcThresh, 50, 150, 3);
-    //findContours(srcThresh, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );// //0.001374
     findContours( srcThresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
     double indexCircularity = 0;
@@ -103,7 +101,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
                 indexCircularity = (4 * PI * contourArea(contours[hierarchy[idx][2]]))/pow(arcLength(contours[hierarchy[idx][2]], true),2);
                // if( indexCircularity > 0.79 )
                 //{
-                    drawContours( resultData.matContours, contours, idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
+                    drawContours( resultData.matContours, contours, (int)idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
                     drawContours( resultData.matContours, contours, hierarchy[idx][2],  Scalar(0,0,255), CV_INTER_LINEAR, 8, hierarchy );
 
                     //mean center
@@ -123,7 +121,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
 
     if( points.size() == rows*cols)
     {
-        verifyCount = orderPoints(resultData.matSrc, rows, cols, ringsSorted, points);
+        verifyCount = orderPoints(rows, cols, ringsSorted, points);
 
         resultData.centers = ringsSorted;
         if(verifyCount ==  rows*cols)
@@ -142,7 +140,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     resultData.numValids = verifyCount;
 }
 
-int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
+int Calibracion::orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers)
 {
     int countResult = 0;
     vector<Point2f> points;
@@ -182,7 +180,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
     if(middlePoints.size() < 3)
         return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[0], middlePoints);
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[i+1] = middlePoints[i];
     }
@@ -193,7 +191,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
     if(middlePoints.size() < 2)
         return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[0], middlePoints);
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[(i+1)*5] = middlePoints[i];
     }
@@ -204,7 +202,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
     if(middlePoints.size() < 3)
         return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[2], middlePoints);
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[i+16] = middlePoints[i];
     }
@@ -215,7 +213,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
         return countResult;
     middlePoints  = orderPointsMiddle(tempSortedCorner[1], middlePoints);
 
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[9+(i*5)] = middlePoints[i];
     }
@@ -227,7 +225,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
         return countResult;
     middlePoints  = orderPointsMiddle(ringsSorted[5], middlePoints);
 
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[i+6] = middlePoints[i];
     }
@@ -238,7 +236,7 @@ int Calibracion::orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ring
         return countResult;
     middlePoints  = orderPointsMiddle(ringsSorted[10], middlePoints);
 
-    for (int i=0; i<middlePoints.size(); i++)
+    for (int i = 0; i < middlePoints.size(); i++)
     {
         ringsSorted[i+11] = middlePoints[i];
     }

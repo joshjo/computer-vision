@@ -24,7 +24,7 @@ public:
     void grayScale(Mat &gray, Mat src);
     void thresholdMat(Mat &thresh, Mat src);
     void calculateCenters(Data &result, Mat src, int rows, int cols);
-    int orderPoints(Mat &mat, int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers);
+    int orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers);
     void getCorners(vector<Point2f> points, vector<Point2f> centers, vector<Point2f> &corners);
     vector<Point2f> pointsMiddle(Point2f p1, Point2f p2, vector<Point2f> &centers);
     vector<Point2f> orderPointsMiddle(Point2f p, vector<Point2f> middlePoints);
