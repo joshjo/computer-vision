@@ -15,15 +15,15 @@ void Calibracion::thresholdMat(Mat &thresh, Mat src)
 {
 
     GaussianBlur(src, thresh,Size(5,5), 2, 2);
-    adaptiveThreshold(thresh, thresh, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 15, 5); //41-12/ 15-5
-    dilate(thresh, thresh, element);
-    erode(thresh, thresh, elementErode);
+    //   Mat binary = thresh.clone();
+    adaptiveThreshold(thresh, thresh, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 21, 7); //41-12/ 15-5
+
     /* Revisar , no reconoce contours.
      int blockSize=21;
      int threshold=10;
-     Mat binary = thresh.clone();
-     int nl = binary.rows; // number of lines
-     int nc = binary.cols; // total number of elements per line
+  //   Mat binary = thresh.clone();
+     int nl = thresh.rows; // number of lines
+     int nc = thresh.cols; // total number of elements per line
      // compute integral image
      cv::Mat iimage;
      cv::integral(src, iimage, CV_32S);
@@ -31,7 +31,7 @@ void Calibracion::thresholdMat(Mat &thresh, Mat src)
      int halfSize = blockSize/2;
      for(int j=halfSize; j<nl - halfSize -1;j++ ){
          // get the address of row j
-         uchar* data = binary.ptr<uchar>(j);
+         uchar* data = thresh.ptr<uchar>(j);
          int* idata1 = iimage.ptr<int>(j-halfSize); // 滑动窗口上边
          int* idata2 = iimage.ptr<int>(j+halfSize+1); // 滑动窗口下边
          //for pixel of a line
@@ -41,31 +41,37 @@ void Calibracion::thresholdMat(Mat &thresh, Mat src)
                      +idata1[i-halfSize])/(blockSize*blockSize);
              //apply adaptive threshold
              if(data[i]>(pix_mean-threshold))
+                 data[i] = 255;
+             else
+                 data[i]  =0;
+         }
+     }
+     // add white border
+     for(int j=0;j<halfSize;j++){
+         uchar *data = thresh.ptr<uchar>(j);
+         for(int i=0; i<thresh.cols;i++)
+             data[i] = 0;
+     }
+     for(int j=thresh.rows-halfSize-1;j<thresh.rows;j++){
+         uchar * data = thresh.ptr<uchar>(j);
+         for(int i=0; i<thresh.cols;i++){
+
+             if(data[i]>170)
                  data[i] = 0;
              else
                  data[i]  =255;
          }
      }
-     // add white border
-     for(int j=0;j<halfSize;j++){
-         uchar *data = binary.ptr<uchar>(j);
-         for(int i=0; i<binary.cols;i++)
-             data[i] = 255;
-     }
-     for(int j=binary.rows-halfSize-1;j<binary.rows;j++){
-         uchar * data = binary.ptr<uchar>(j);
-         for(int i=0; i<binary.cols;i++){
-             data[i] = 255;
-         }
-     }
      for(int j=halfSize;j<nl-halfSize-1;j++){
-         uchar* data = binary.ptr<uchar>(j);
+         uchar* data = thresh.ptr<uchar>(j);
          for(int i=0; i<halfSize;i++)
-             data[i] = 255;
-         for(int i=binary.cols-halfSize-1;i<binary.cols;i++)
-             data[i] = 255;
+             data[i] = 0;
+         for(int i=thresh.cols-halfSize-1;i<thresh.cols;i++)
+             data[i] = 0;
      }
-    thresh = binary.clone();
+
+
+
 */
 }
 
@@ -76,7 +82,7 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
 
-    unsigned long idx = 0;
+    int idx = 0;
     Vec3f circleTemp;
     RotatedRect rectRot;
     vector<int> ellipses;
@@ -87,35 +93,31 @@ void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, in
     RotatedRect rect;
     RotatedRect rectChild;
     vector<Point2f> points;
-
+    // Index to adaptative
     for(; idx >= 0 ; idx = hierarchy[idx][0] )
     {
         if( contours[idx].size() > 4 && !(hierarchy[idx][2] == -1 &&  hierarchy[idx][3] == -1 ))
         {
             indexCircularity = (4 * PI * contourArea(contours[idx]))/pow(arcLength(contours[idx], true),2);
-            if( indexCircularity > 0.5 && contours[hierarchy[idx][2]].size() > 4)
+            if( indexCircularity > 0.7 && contours[hierarchy[idx][2]].size() > 4)
             {
                 rect = fitEllipse(contours[idx]);
                 rectChild = fitEllipse(contours[hierarchy[idx][2]]);
+                drawContours( resultData.matContours, contours, (int)idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
+                drawContours( resultData.matContours, contours, hierarchy[idx][2],  Scalar(0,0,255), CV_INTER_LINEAR, 8, hierarchy );
 
-                indexCircularity = (4 * PI * contourArea(contours[hierarchy[idx][2]]))/pow(arcLength(contours[hierarchy[idx][2]], true),2);
-               // if( indexCircularity > 0.79 )
-                //{
-                    drawContours( resultData.matContours, contours, (int)idx,  Scalar(255,0,255), CV_INTER_LINEAR, 8, hierarchy );
-                    drawContours( resultData.matContours, contours, hierarchy[idx][2],  Scalar(0,0,255), CV_INTER_LINEAR, 8, hierarchy );
+                //mean center
+                // double xCenter = (rect.center.x + rectChild.center.x)/2;
+                // double yCenter = (rect.center.y + rectChild.center.y)/2;
+                float xCenter = rect.center.x ;
+                float yCenter = rect.center.y ;
+                points.push_back(Point2f( xCenter, yCenter));
 
-                    //mean center
-                    // double xCenter = (rect.center.x + rectChild.center.x)/2;
-                    // double yCenter = (rect.center.y + rectChild.center.y)/2;
-                    float xCenter = rect.center.x ;
-                    float yCenter = rect.center.y ;
-                    points.push_back(Point2f( xCenter, yCenter));
-              //  }
             }
         }
 
     }
-    //vector<Point> pointsSorted;
+
     vector<Point2f> ringsSorted = points;
     int verifyCount = 0;
 

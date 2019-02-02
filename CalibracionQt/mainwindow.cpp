@@ -252,7 +252,9 @@ void MainWindow::on_pushButton_clicked()
 
             t0=clock();
             objCal->grayScale(matGray, matOriginal);
+
             objCal->thresholdMat(matThresh, matGray);
+
             // objCal->thresholdIntegral(matThresh, matGray);
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
             t1 = clock();
