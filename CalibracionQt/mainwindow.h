@@ -31,11 +31,11 @@ private slots:
 
     void on_openVideoBtn_clicked();
 
-    void calibration();
+    void calibration(int width, int height);
 
     void reset();
 
-    void frontoParallel(Mat & K, Mat & D);
+    void frontoParallel(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D);
 
 private:
     Ui::MainWindow *ui;
