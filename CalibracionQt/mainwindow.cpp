@@ -57,14 +57,68 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
 
     Point2f source [4];
     Point2f dest [4];
-    Mat output, matGray, matThresh, matUndst, matPerspective;
+    Mat matGray, matThresh, matUndst, matPerspective, matOriginal;
     Data result;
     Mat Ki = K.clone();
     Mat Di = D.clone();
     double rms;
     int flag = 0;
+    int padding = 90;
 
+    Size outputSize = Size(size.width, size.width / 1.25);
     vector< Mat > rvecs, tvecs;
+
+    vector<Mat> perspectives;
+
+    int stepX = (size.width - 10) / 5;
+    int stepY = size.height / 4;
+
+    cout << "size: " << size.width << " " << size.height << endl;
+
+    cout << "cols: " << cols << endl;
+    cout << "rows: " << rows << endl;
+
+    for (int k = 0; k < 1; k++) {
+        vector <vector<Point2f> > imgPoints;
+        vector <vector<Point3f> > objPoints;
+
+        //        for (int j = 0; j < calibrateFramesVectors.size(); j++) {
+        for (int j = 0; j < points.size(); j++) {
+            vector <Point2f> dest;
+
+            matOriginal = frames[j].clone();
+
+            for(int y = rows - 1; y >= 0; y--) {
+                for (int x = 0; x < cols; x++) {
+                        dest.push_back(Point2f((stepX * x) + padding, (stepY * y) + padding));
+                }
+            }
+
+            undistort(matOriginal, matUndst, Ki, Di);
+            Mat lambda = findHomography(points[j], dest);
+            warpPerspective(matUndst, matPerspective, lambda, outputSize);
+
+            string a =  "perspective" + to_string(j) + ".jpg" ;//+ i + ".jpg";
+
+             imwrite(a, matPerspective);
+             vector< Point3f > obj;
+             for (int i = 0; i < rows; i++) {
+                 for (int j = 0; j < cols; j++) {
+                     obj.push_back(Point3f((float)j * 45, (float)i * 45, 0));
+                 }
+             }
+             objPoints.push_back(obj);
+             imgPoints.push_back( points[j]);
+             rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
+
+             cout << "k: " << k << " j: " << j << " rms: " << rms << endl;
+
+
+           // imshow("jerspective", matPerspective);
+        }
+
+
+        /*
 
     for (int k = 0; k < 1; k++) {
         vector <vector<Point2f> > imgPoints;
@@ -114,6 +168,7 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
 
         cout << "imgPoints size: " << imgPoints.size() << endl;
         cout << "objPoints size: " << objPoints.size() << endl;
+        */
     }
 
 }
@@ -147,12 +202,12 @@ void MainWindow::calibration(int width, int height)
         double dist = 0;
         for(int idxFrame = 0; idxFrame < calibrateFrames.size(); idxFrame++)
         {
-             imshow("temp", calibrateFrames.at(idxFrame));
+            imshow("temp", calibrateFrames.at(idxFrame));
             // first point
             Point cornerMat = calibrateFramesVectors.at(idxFrame).at(15); //0
             //distances
             double distPoint = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(19).x,2) +
-                                 pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y,2));
+                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y,2));
             double distY = abs(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y);
             dist = sqrt(pow(referencePoints.at(idxRef).x - cornerMat.x,2) + pow(referencePoints.at(idxRef).y - cornerMat.y, 2));
 
@@ -214,11 +269,11 @@ void MainWindow::calibration(int width, int height)
             image_points.push_back(img);
             object_points.push_back(obj);
         }
-         cout  << "final iter k" << endl;
+        cout  << "final iter k" << endl;
         //the final re-projection error.
         rms = calibrateCamera(object_points, image_points, size, K, D, rvecs, tvecs, flag);
         avrTotal =  computeReprojectionErrors( object_points, image_points, rvecs, tvecs, K , D,reprojErrs);
-         cout  << "init fronto parallel" << endl;
+        cout  << "init fronto parallel" << endl;
         frontoParallel(listReferenceMat,listReference,K, D);
         cout  << "fin fronto parallel" << endl;
         QString qstr = "";
