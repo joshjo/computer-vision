@@ -5,6 +5,7 @@
 #include<QGraphicsPixmapItem>
 #include <ctime>
 #include <QFileDialog>
+#include <QIntValidator>
 #include <QMessageBox>
 #include "calibracion.h"
 
