@@ -37,6 +37,11 @@ private slots:
 
     void frontoParallel(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D);
 
+    vector<Point3f> getCornersPoints(int widthPattern, int heightPattern);
+
+    vector<Point2f> orderPoints(vector<Point2f> points);
+
+
 private:
     Ui::MainWindow *ui;
 

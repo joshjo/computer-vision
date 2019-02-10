@@ -75,6 +75,16 @@ void Calibracion::thresholdMat(Mat &thresh, Mat src)
 */
 }
 
+void Calibracion::thresholdMatv2(Mat &thresh, Mat src)
+{
+
+    GaussianBlur(src, thresh,Size(5,5), 2, 2);
+    adaptiveThreshold(thresh, thresh, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 41, 7); //41-12/ 15-5
+
+
+}
+
+
 void Calibracion::calculateCenters(Data &resultData, Mat srcThresh, int rows, int cols)
 {
 

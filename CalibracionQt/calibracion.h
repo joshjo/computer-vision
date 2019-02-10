@@ -23,6 +23,7 @@ public:
     Mat elementErode = getStructuringElement(MORPH_ELLIPSE, Size(7, 7), Point(2,2));
     void grayScale(Mat &gray, Mat src);
     void thresholdMat(Mat &thresh, Mat src);
+    void thresholdMatv2(Mat &thresh, Mat src);
     void calculateCenters(Data &result, Mat src, int rows, int cols);
     int orderPoints(int rows, int cols, vector<Point2f> &ringsSorted, vector<Point2f> centers);
     void getCorners(vector<Point2f> points, vector<Point2f> centers, vector<Point2f> &corners);
