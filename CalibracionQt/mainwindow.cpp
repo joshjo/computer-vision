@@ -184,19 +184,10 @@ void MainWindow::calibration(int width, int height)
             double difAxisX2 = abs(calibrateFramesVectors.at(idxFrame).at(4).x - calibrateFramesVectors.at(idxFrame).at(19).x);
             // Distance corner references to point
             disReferendecCorner = sqrt(pow(referencePoints.at(idxRef).x - cornerMat.x,2) + pow(referencePoints.at(idxRef).y - cornerMat.y, 2));
-            //relacion de distX and distY
-            double distPointX = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(19).x,2) +
-                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y,2));
 
-            double distPointY = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(0).x,2) +
-                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(0).y,2));
-            //cout << distPointY/distPointX << endl;
             if(std::find(listId.begin(), listId.end(), idxFrame) == listId.end()
                     && difAxisX < 3 && difAxisX2 < 3 // vertical lines
                     && difAxisY < 3 && difAxisY2 < 3) //horizontal lines
-                   // && distPointX < wSize+5 && difAxisY < 10 && disReferendecCorner < wSize/2 // && distPoint < wSize minW < disReferendecCorner &&
-                   // && distPointY/distPointX < 0.9 && distPointY/distPointX > 0.7
-                   // && listReferenceMat.size() < (idxRef*numFrame + numFrame)) //100
             {
                 listReferenceMat.push_back(calibrateFrames.at(idxFrame));
                 listReference.push_back(calibrateFramesVectors.at(idxFrame));
