@@ -70,13 +70,15 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
     //Size outputSize = Size(circleSpacing*2*5, circleSpacing*2*4);//Size(450, 360);
     Size outputSize = Size(circleSpacing*2*5, circleSpacing*2*4);//Size(450, 360);
 
-    vector< Mat > rvecs, tvecs;
+    vector< Mat > rvecs, tvecs, rvecs1, tvecs1;
     vector<Mat> perspectives;
 
+    vector<float> perViewErrors;
+Mat image = frames[0];
     int stepX = (size.width ) / 5 -20; //?
     int stepY = size.height / 4;
 
-    for (int k = 0; k < 50; k++) {
+    for (int k = 0; k < 5; k++) {
         vector <vector<Point2f> > imgPoints;
         vector <vector<Point3f> > objPoints;
 
@@ -121,9 +123,21 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
         }
 
         rms = calibrateCamera(objPoints, imgPoints, outputSize, Ki, Di, rvecs, tvecs, flag);
-        cout << endl << "iter: " << k << " - rms : " << rms << endl;
+        double a = computeReprojectionErrors(objPoints, imgPoints, rvecs,tvecs, Ki, Di, perViewErrors);
+        cout << endl << "iter: " << k << " - rms : " << rms << " rms2: " << a << endl;
     }
 
+    string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
+    imwrite(a, frames[0]);//result.matContours);
+    Mat newCamMat;
+
+    undistort(image, newCamMat, Ki, Di);
+    a =  "" + to_string(0) + "_und.jpg" ;//+ i + ".jpg";
+    imwrite(a, image);//result.matContours);
+   // fisheye::estimateNewCameraMatrixForUndistortRectify(Ki, Di, size,
+                                                        //Matx33d::eye(), newCamMat, 1);
+   // fisheye::initUndistortRectifyMap(Ki, Di, Matx33d::eye(), newCamMat, size,
+   //                                  CV_16SC2, map1, map2);
 
 }
 
@@ -131,7 +145,7 @@ void MainWindow::calibration(int width, int height)
 {
 
     //Num frames per position
-    int numFrame = 5;
+    int numFrame = 6;
 
     //Part frame in 9 small areas
     double wSize = width / 3;
