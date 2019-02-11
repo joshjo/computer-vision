@@ -125,10 +125,10 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
         rms = calibrateCamera(objPoints, imgPoints, outputSize, Ki, Di, rvecs, tvecs, flag);
         cout << endl << "iter: " << k << " - rms : " << rms << " rms2: " << endl;
 
-        Mat newCamMat;
+       /* Mat newCamMat;
         undistort(image, newCamMat, Ki, Di);
         string a =  "" + to_string(k) + "_und.jpg" ;//+ i + ".jpg";
-        imwrite(a, newCamMat);
+        imwrite(a, newCamMat);*/
     }
 
     string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
@@ -199,7 +199,7 @@ void MainWindow::calibration(int width, int height)
     }
     cout << "N. selected frames: " << listReferenceMat.size() << endl;
     ui->calibrationFramesLabel->setText(QString::number(listReference.size()));
-     Scalar color(23,190,187);
+/*     Scalar color(23,190,187);
     for(int i = 0; i < listReferenceMat.size(); i++)
     {
         string a =  "Gray_Image" + to_string( i) + ".jpg" ;//+ i + ".jpg";
@@ -208,7 +208,7 @@ void MainWindow::calibration(int width, int height)
             circle(image, referencePoints[i], 2, color, -1, 8, 0);
          imwrite(a, image);
     }
-
+*/
 
     /************** INIT CALIBRATION *******************/
 
