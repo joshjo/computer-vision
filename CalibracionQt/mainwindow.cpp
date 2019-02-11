@@ -67,7 +67,9 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
 
     //640
     //480
+    //Size outputSize = Size(circleSpacing*2*5, circleSpacing*2*4);//Size(450, 360);
     Size outputSize = Size(circleSpacing*2*5, circleSpacing*2*4);//Size(450, 360);
+
     vector< Mat > rvecs, tvecs;
     vector<Mat> perspectives;
 
@@ -84,25 +86,31 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
             matOriginal = frames[j].clone();
             for( int i = rows - 1; i >= 0; --i )
                 for( int j = 0; j < cols; ++j )
-                    dest.push_back(Point2f(float( j*circleSpacing*2 + circleSpacing ), float( i*circleSpacing*2 + circleSpacing )));//float( j*90 + 45 ), float( i*90 + 45 )))
+                    dest.push_back(Point2f(float( j*circleSpacing*2 + circleSpacing  ), float( i*circleSpacing*2 + circleSpacing)));//float( j*90 + 45 ), float( i*90 + 45 )))
+
+            // dest.push_back(Point2f(float( j*circleSpacing + circleSpacing ), float( i*circleSpacing + circleSpacing )));//float( j*90 + 45 ), float( i*90 + 45 )))
 
 
             undistort(matOriginal, matUndst, Ki, Di);
             Mat lambda = findHomography(points[j], dest);
             warpPerspective(matUndst, matPerspective, lambda, outputSize);
 
-            string a =  "perspective" + to_string(j) + ".jpg" ;//+ i + ".jpg";
-            //
             objCal->grayScale(matGray, matPerspective);
             //objCal->thresholdMat(matThresh, matGray);
             objCal->thresholdMatv2(matThresh, matGray);
 
             Data result;
-          //  result.matSrc = matPerspective.clone();
-           // result.matContours = matPerspective.clone();
+            result.matSrc = matPerspective.clone();
+            result.matContours = matPerspective.clone();
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
-           // imwrite(a, result.matContours);//result.matContours);
-            vector< Point3f > obj = getCornersPoints(5, 4);
+            // string a =  "" + to_string(k) + "_perspective" + to_string(j) + ".jpg" ;//+ i + ".jpg";
+            // imwrite(a, result.matContours);//result.matContours);
+            //vector< Point3f > obj = getCornersPoints(5, 4);
+            vector< Point3f > obj;
+            for( int i = rows - 1; i >= 0; --i )
+                for( int j = 0; j < cols; ++j )
+                    obj.push_back(Point3f(float( j*circleSpacing*2 + circleSpacing  ), float( i*circleSpacing*2 + circleSpacing ), 0));
+
             if(result.numValids == rows*cols)
             {
 
@@ -112,8 +120,8 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
             }
         }
 
-        rms = calibrateCamera(objPoints, imgPoints, size, Ki, Di, rvecs, tvecs, flag);
-        cout << "iter: " << k << " - rms : " << rms << endl;
+        rms = calibrateCamera(objPoints, imgPoints, outputSize, Ki, Di, rvecs, tvecs, flag);
+        cout << endl << "iter: " << k << " - rms : " << rms << endl;
     }
 
 
@@ -205,7 +213,7 @@ void MainWindow::calibration(int width, int height)
     vector<float> reprojErrs;
     for(int k = 0; k < listReference.size(); k++) {
 
-       // vector< Point2f > imgCenters = orderPoints(listReference[k]);
+        // vector< Point2f > imgCenters = orderPoints(listReference[k]);
         vector<Point3f> corners = getCornersPoints(5, 4);
 
         image_points.push_back(listReference[k]);
