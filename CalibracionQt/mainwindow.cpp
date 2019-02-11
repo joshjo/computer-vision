@@ -74,11 +74,11 @@ void MainWindow::frontoParallel(vector<Mat> frames, vector<vector<Point2f>>point
     vector<Mat> perspectives;
 
     vector<float> perViewErrors;
-Mat image = frames[0];
+    Mat image = frames[0];
     int stepX = (size.width ) / 5 -20; //?
     int stepY = size.height / 4;
 
-    for (int k = 0; k < 5; k++) {
+    for (int k = 0; k < 50; k++) {
         vector <vector<Point2f> > imgPoints;
         vector <vector<Point3f> > objPoints;
 
@@ -105,14 +105,14 @@ Mat image = frames[0];
             result.matSrc = matPerspective.clone();
             result.matContours = matPerspective.clone();
             objCal->calculateCenters(result, matThresh.clone(), rows, cols);
-            // string a =  "" + to_string(k) + "_perspective" + to_string(j) + ".jpg" ;//+ i + ".jpg";
-            // imwrite(a, result.matContours);//result.matContours);
-            //vector< Point3f > obj = getCornersPoints(5, 4);
-            vector< Point3f > obj;
+             string a =  "" + to_string(k) + "_perspective" + to_string(j) + ".jpg" ;//+ i + ".jpg";
+             imwrite(a, matPerspective);//result.matContours);
+            vector< Point3f > obj = getCornersPoints(5, 4);
+           /* vector< Point3f > obj;
             for( int i = rows - 1; i >= 0; --i )
                 for( int j = 0; j < cols; ++j )
                     obj.push_back(Point3f(float( j*circleSpacing*2 + circleSpacing  ), float( i*circleSpacing*2 + circleSpacing ), 0));
-
+*/
             if(result.numValids == rows*cols)
             {
 
@@ -123,21 +123,16 @@ Mat image = frames[0];
         }
 
         rms = calibrateCamera(objPoints, imgPoints, outputSize, Ki, Di, rvecs, tvecs, flag);
-        double a = computeReprojectionErrors(objPoints, imgPoints, rvecs,tvecs, Ki, Di, perViewErrors);
-        cout << endl << "iter: " << k << " - rms : " << rms << " rms2: " << a << endl;
+        cout << endl << "iter: " << k << " - rms : " << rms << " rms2: " << endl;
+
+        Mat newCamMat;
+        undistort(image, newCamMat, Ki, Di);
+        string a =  "" + to_string(k) + "_und.jpg" ;//+ i + ".jpg";
+        imwrite(a, newCamMat);
     }
 
     string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
     imwrite(a, frames[0]);//result.matContours);
-    Mat newCamMat;
-
-    undistort(image, newCamMat, Ki, Di);
-    a =  "" + to_string(0) + "_und.jpg" ;//+ i + ".jpg";
-    imwrite(a, image);//result.matContours);
-   // fisheye::estimateNewCameraMatrixForUndistortRectify(Ki, Di, size,
-                                                        //Matx33d::eye(), newCamMat, 1);
-   // fisheye::initUndistortRectifyMap(Ki, Di, Matx33d::eye(), newCamMat, size,
-   //                                  CV_16SC2, map1, map2);
 
 }
 
@@ -145,7 +140,7 @@ void MainWindow::calibration(int width, int height)
 {
 
     //Num frames per position
-    int numFrame = 6;
+    int numFrame = 3;
 
     //Part frame in 9 small areas
     double wSize = width / 3;
@@ -181,17 +176,27 @@ void MainWindow::calibration(int width, int height)
             Point cornerMat = calibrateFramesVectors.at(idxFrame).at(15); //0
 
             //dispoint == size.width / 3
-            double distPoint = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(19).x,2) +
-                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y,2));
 
             double difAxisY = abs(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y);
-            double difAxisY2 = abs(calibrateFramesVectors.at(idxFrame).at(1).y - calibrateFramesVectors.at(idxFrame).at(15).y);
-            disReferendecCorner = sqrt(pow(referencePoints.at(idxRef).x - cornerMat.x,2) + pow(referencePoints.at(idxRef).y - cornerMat.y, 2));
+            double difAxisY2 = abs(calibrateFramesVectors.at(idxFrame).at(0).y - calibrateFramesVectors.at(idxFrame).at(4).y);
 
-            if(std::find(listId.begin(), listId.end(), idxFrame) == listId.end() &&
-                    minW > disReferendecCorner && difAxisY < 20 && distPoint < wSize
-                    && difAxisY2 > hSize/2
-                    && listReferenceMat.size() < (idxRef*numFrame + numFrame)) //100
+            double difAxisX = abs(calibrateFramesVectors.at(idxFrame).at(0).x - calibrateFramesVectors.at(idxFrame).at(15).x);
+            double difAxisX2 = abs(calibrateFramesVectors.at(idxFrame).at(4).x - calibrateFramesVectors.at(idxFrame).at(19).x);
+            // Distance corner references to point
+            disReferendecCorner = sqrt(pow(referencePoints.at(idxRef).x - cornerMat.x,2) + pow(referencePoints.at(idxRef).y - cornerMat.y, 2));
+            //relacion de distX and distY
+            double distPointX = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(19).x,2) +
+                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(19).y,2));
+
+            double distPointY = sqrt(pow(calibrateFramesVectors.at(idxFrame).at(15).x - calibrateFramesVectors.at(idxFrame).at(0).x,2) +
+                                    pow(calibrateFramesVectors.at(idxFrame).at(15).y - calibrateFramesVectors.at(idxFrame).at(0).y,2));
+            //cout << distPointY/distPointX << endl;
+            if(std::find(listId.begin(), listId.end(), idxFrame) == listId.end()
+                    && difAxisX < 3 && difAxisX2 < 3 // vertical lines
+                    && difAxisY < 3 && difAxisY2 < 3) //horizontal lines
+                   // && distPointX < wSize+5 && difAxisY < 10 && disReferendecCorner < wSize/2 // && distPoint < wSize minW < disReferendecCorner &&
+                   // && distPointY/distPointX < 0.9 && distPointY/distPointX > 0.7
+                   // && listReferenceMat.size() < (idxRef*numFrame + numFrame)) //100
             {
                 listReferenceMat.push_back(calibrateFrames.at(idxFrame));
                 listReference.push_back(calibrateFramesVectors.at(idxFrame));
@@ -203,7 +208,7 @@ void MainWindow::calibration(int width, int height)
     }
     cout << "N. selected frames: " << listReferenceMat.size() << endl;
     ui->calibrationFramesLabel->setText(QString::number(listReference.size()));
-    /* Scalar color(23,190,187);
+     Scalar color(23,190,187);
     for(int i = 0; i < listReferenceMat.size(); i++)
     {
         string a =  "Gray_Image" + to_string( i) + ".jpg" ;//+ i + ".jpg";
@@ -212,7 +217,7 @@ void MainWindow::calibration(int width, int height)
             circle(image, referencePoints[i], 2, color, -1, 8, 0);
          imwrite(a, image);
     }
-*/
+
 
     /************** INIT CALIBRATION *******************/
 
@@ -221,7 +226,7 @@ void MainWindow::calibration(int width, int height)
     double rms = 0;
     double avrTotal = 0;
 
-    if(listReference.size() <= 25)
+    if(listReference.size() <= 8)
         return;
 
     vector<float> reprojErrs;
