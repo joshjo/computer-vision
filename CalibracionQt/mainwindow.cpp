@@ -266,8 +266,8 @@ void MainWindow::calibration(int width, int height)
 
     vector<float> reprojErrs;
     vector< Mat > rvecs, tvecs;
-    //int flag = 0;
-    int flag = CV_CALIB_FIX_K4;flag |= CV_CALIB_FIX_K5;
+    int flag = 0;
+    //int flag = CV_CALIB_FIX_K4;flag |= CV_CALIB_FIX_K5;
 
     //Revert order points
     revertPoints(listPointsSelected);
