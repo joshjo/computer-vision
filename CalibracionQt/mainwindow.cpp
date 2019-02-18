@@ -199,9 +199,9 @@ void MainWindow::iterativeCalibration(vector<Mat> frames,
         imwrite(a, newCamMat);
     }
 
-    string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
+   /* string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
     imwrite(a, frames[0]);//result.matContours);
-
+*/
 }
 
 void MainWindow::calibration(int widthFrame, int heightFrame)
