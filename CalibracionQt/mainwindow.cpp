@@ -136,7 +136,7 @@ void MainWindow::iterativeCalibration(vector<Mat> frames,
         }
     }
     // Number of iterations
-    for (int iter = 0; iter < 50; iter++) {
+    for (int iter = 0; iter < 5; iter++) {
 
         vector<vector<Point2f>> imagePointsNew;
         // A .- get correct points
@@ -153,7 +153,8 @@ void MainWindow::iterativeCalibration(vector<Mat> frames,
             vector <Point2f> dest = destHomografy;
             Mat H = findHomography(undistPointBuf, dest);
             warpPerspective(matUndst, matPerspective, H, Size(widthPattern, heightPattern));
-
+            string a =  "" + to_string(j) + "_perp.jpg" ;//+ i + ".jpg";
+            imwrite(a, matPerspective);//result.matContours);
             //3.- Localize points
             objCal->grayScale(matGray, matPerspective);
             objCal->thresholdMatv2(matThresh, matGray);
@@ -180,7 +181,16 @@ void MainWindow::iterativeCalibration(vector<Mat> frames,
                 //vector<Point2f> centerDistor = distort(pointsCenterTrans, optimalMatrix,Ki);
                 imagePointsNew.push_back(pointsCorrect);
 
+                string a =  "" + to_string(j) + "_distort.jpg" ;//+ i + ".jpg";
+                imwrite(a, matPerspective);//result.matContours);
 
+                for(int i = 0; i < 20 ; i++)
+                {
+                    circle(matOriginal, pointsCenterTrans[i], 2, Scalar(255,0,0), -1, 8, 0);
+                    circle(matOriginal, pointsCorrect[i], 2,  Scalar(0,255,0), -1, 8, 0);
+                }
+                 string b =  "" + to_string(j) + "_temp" + to_string(j) + ".jpg" ;//+ i + ".jpg";
+                 imwrite(b, matOriginal);//result.matContours);
 
             }
         }
@@ -198,10 +208,9 @@ void MainWindow::iterativeCalibration(vector<Mat> frames,
         string a =  "" + to_string(iter) + "_und.jpg" ;//+ i + ".jpg";
         imwrite(a, newCamMat);
     }
-
-   /* string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
+    string a =  "" + to_string(0) + "_ori.jpg" ;//+ i + ".jpg";
     imwrite(a, frames[0]);//result.matContours);
-*/
+
 }
 
 void MainWindow::calibration(int widthFrame, int heightFrame)
@@ -441,8 +450,9 @@ void MainWindow::on_pushButton_clicked()
         //namedWindow("liz", WINDOW_AUTOSIZE);
         int c = 0;
 
-        while( key != 'x')// && c < totalFrames)
+        while( key != 'x' || c < totalFrames)// && c < totalFrames)
         {
+            c++;
 
             frame = cvQueryFrame( cap );
             if( !frame ) break;
