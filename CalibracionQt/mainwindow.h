@@ -35,11 +35,9 @@ private slots:
 
     void reset();
 
-    void frontoParallel(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D);
+    void frontoParallel(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D, vector< Mat > rvecs,vector< Mat > tvecs);
 
-    vector<Point3f> getCornersPoints(int widthPattern, int heightPattern);
-
-    vector<Point2f> orderPoints(vector<Point2f> points);
+    void revertPoints(vector<vector<Point2f>> &imagesPoints);
 
 
 private:
