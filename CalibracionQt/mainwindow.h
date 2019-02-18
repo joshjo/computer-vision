@@ -33,9 +33,9 @@ private slots:
 
     void calibration(int width, int height);
 
-    void reset();
+    void iterativeCalibration(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D, vector<Mat> &rvecs,vector<Mat> &tvecs);
 
-    void frontoParallel(vector<Mat> frames, vector<vector<Point2f>>points, Mat & K, Mat & D, vector< Mat > rvecs,vector< Mat > tvecs);
+    void reset();
 
     void revertPoints(vector<vector<Point2f>> &imagesPoints);
 
